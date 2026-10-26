@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>نظام تقييم الزيارات الميدانية للحلقات</title>
+<title>نظام رِفاد | تقييم الزيارات الميدانية للحلقات</title>
+<link rel="icon" type="image/svg+xml" href="rafad-logo.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -808,6 +809,12 @@
   html.lay-side #viewVisits, html.lay-side #viewDash, html.lay-side #viewSchedule, html.lay-side #viewBase { grid-column: 2; grid-row: 1; min-width: 0; }
   #schSort { width: auto; min-width: 230px; }
 
+  /* ===== Rafad title ===== */
+  .brand h1.rf-title { display: flex; align-items: center; gap: 10px; }
+  .rf-logo { width: 1.25em; height: 1.25em; flex: none; border-radius: 22%; box-shadow: 0 4px 10px -6px rgba(14,92,55,.6); }
+  .rf-tag { color: var(--muted); font-weight: 600; font-size: .92rem; line-height: 1.4; margin-top: 2px; }
+  body.sched .rf-tag { font-size: .82rem; }
+
   /* ===== Main base (القاعدة الرئيسية) ===== */
   .base-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
   .base-bar input[type="search"] { flex: 1 1 240px; }
@@ -842,6 +849,121 @@
     html.lay-side .tab .tabbadge { margin-inline-start: 0; }
   }
 </style>
+<style id="proCss">
+  /* ===== Rafad professional polish (screen only; print and reports untouched) ===== */
+  @media screen {
+    html.th-green:root:root {
+      --page-bg: linear-gradient(180deg, #0d5f37 0, #0d5f37 210px, #f1f4f0 210px);
+      --line: #e1e7df; --field: #f7f9f6; --muted: #61716a; --pale: #eaf2ec;
+    }
+    html.th-green { background-color: #f1f4f0; }
+    :root { --r-card: 16px; --sh-card: 0 1px 2px rgba(16,40,30,.05), 0 8px 24px -14px rgba(16,40,30,.28); }
+
+    /* header */
+    .top { background: #fff; border-bottom: 1px solid var(--line); box-shadow: 0 10px 30px -22px rgba(0,0,0,.6); margin-bottom: 0; }
+    .top::before { height: 4px; background: linear-gradient(to left, var(--green-deep) 0 80%, var(--gold) 80% 100%); }
+    .top::after { display: none; }
+    .top-in, body.sched .top-in { padding-block: 12px; }
+    .logo-box.has-img { border: 1px solid var(--line); border-radius: 12px; padding: 4px; background: #fff; }
+    .brand { border-inline-start: 1px solid var(--line); }
+    .brand .org { font-size: .85rem; font-weight: 700; letter-spacing: 0; }
+    .brand h1 { font-size: 1.75rem; }
+    body.sched .brand h1 { font-size: 1.4rem; }
+    .top-meta { background: var(--field); border: 1px solid var(--line); border-radius: 12px; border-inline-start: 4px solid var(--gold); }
+    .top-gear { border-radius: 12px; border-color: var(--line); color: var(--muted); transition: color .15s, border-color .15s, background .15s; }
+    .top-gear:hover { color: var(--brand); border-color: var(--brand); background: var(--pale); }
+    .top-gear svg { width: 22px; height: 22px; }
+    .wrap { padding-top: 26px; }
+
+    /* cards */
+    .panel, .drawer-sheet, details.settings { border-radius: var(--r-card); box-shadow: var(--sh-card); border: 1px solid var(--line); }
+    .panel { padding: 22px 24px; }
+    h2 { font-family: Cairo, "IBM Plex Sans Arabic", sans-serif; font-size: 1.3rem; font-weight: 800; border-inline-start: 4px solid var(--gold); padding-inline-start: 12px; }
+    .panel-head { padding-bottom: 14px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+
+    /* stat tiles: icon chip + number, same height */
+    .stats { gap: 16px; margin: 0 0 20px; }
+    .stats .dk-tile { display: grid; grid-template-columns: 52px 1fr; column-gap: 14px; align-items: center; text-align: start; margin-top: 0; padding: 18px 18px 0; border-radius: var(--r-card); border: 1px solid var(--line); border-bottom: 1px solid var(--line); box-shadow: var(--sh-card); }
+    .stats .dk-tico { position: static; grid-row: 1 / span 2; width: 52px; height: 52px; border-radius: 14px; background: color-mix(in srgb, var(--ac) 12%, #fff); color: var(--ac); box-shadow: none; }
+    .stats .dk-tico svg { width: 26px; height: 26px; }
+    .stats .dk-tlbl { grid-column: 2; font-size: .9rem; color: var(--muted); }
+    .stats .dk-tnum { grid-column: 2; font-size: 1.9rem; line-height: 1.15; color: var(--ink); text-align: start; direction: rtl; unicode-bidi: normal; }
+    .stats .dk-tsub, .stats .st-meter, .stats .dk-tmore { grid-column: 1 / -1; }
+    .stats .dk-tsub { padding: 6px 0 10px; }
+    .stats .st-meter { margin: 0 0 12px; }
+    .stats .dk-tmore { margin: 0 -18px; width: calc(100% + 36px); text-align: start; padding: 10px 18px; font-weight: 600; border-top: 1px solid var(--line); border-radius: 0 0 var(--r-card) var(--r-card); }
+    .tc-slate { --ac: #0f6b3e; } .tc-gold { --ac: #a87b12; } .tc-red { --ac: #b3372f; }
+
+    /* side navigation: labels on all desktop widths */
+    html.lay-side .tabs { border: 1px solid var(--line); box-shadow: var(--sh-card); padding: 12px; }
+    html.lay-side .tab { gap: 12px; font-weight: 700; color: #33463e; transition: background .15s, color .15s; }
+    html.lay-side .tab .ti { display: inline-flex; width: 34px; height: 34px; border-radius: 10px; align-items: center; justify-content: center; background: var(--field); color: var(--brand); flex: none; }
+    html.lay-side .tab .ti svg { width: 19px; height: 19px; }
+    html.lay-side .tab[aria-selected="true"] { background: var(--brand); color: #fff; box-shadow: inset -4px 0 0 var(--gold); }
+    html.lay-side .tab[aria-selected="true"] .ti { background: rgba(255,255,255,.16); color: #fff; }
+    @media (min-width: 1100px) and (max-width: 1599px) {
+      html.lay-side .wrap { grid-template-columns: 232px minmax(0, 1fr); column-gap: 22px; }
+      html.lay-side .tabs { padding: 12px; }
+      html.lay-side .tabs::before { display: block; }
+      html.lay-side .tab { justify-content: flex-start; padding: 8px 10px; }
+      html.lay-side .tab > span:not(.ti):not(.tabbadge) { display: inline; }
+      html.lay-side .tab .tabbadge { position: static; margin-inline-start: auto; }
+    }
+    @media (min-width: 961px) and (max-width: 1099px) { html.lay-side .tab .ti { background: transparent; color: inherit; } }
+    @media (max-width: 960px) {
+      html.lay-side .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; }
+      html.lay-side .tab { width: 100%; justify-content: flex-start; padding: 6px 8px; font-size: .9rem; }
+      html.lay-side .tab .ti { width: 30px; height: 30px; }
+    }
+    /* top tab layout on the light page */
+    html.th-green:not(.lay-side) .tab { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    html.th-green:not(.lay-side) .tab[aria-selected="true"] { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+    /* form controls */
+    input, select, textarea { background: #fff; border: 1px solid #d5ddd3; border-radius: 10px; padding: 10px 12px; transition: border-color .15s, box-shadow .15s; }
+    input:hover, select:hover, textarea:hover { border-color: #b9c6b6; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
+    label { color: #33463e; font-weight: 600; font-size: .9rem; }
+    fieldset { border-radius: 14px; border-color: var(--line); }
+
+    /* buttons */
+    .btn { background: var(--brand); color: #fff; border: 0; border-radius: 10px; font-weight: 700; box-shadow: 0 1px 0 rgba(0,0,0,.05), 0 6px 14px -8px color-mix(in srgb, var(--brand) 70%, transparent); transition: background .15s, transform .05s; }
+    .btn:hover { filter: none; background: var(--green-deep); }
+    .btn:active { transform: translateY(1px); }
+    .btn.ghost { background: #fff; color: #33463e; border: 1px solid #d5ddd3; box-shadow: none; }
+    .btn.ghost:hover { background: var(--pale); border-color: var(--brand); color: var(--brand); }
+    .btn.ghost.tbl { border-color: #d5ddd3; color: var(--title); }
+    .btn.ghost.danger:hover { background: #fdecea; border-color: var(--danger); color: var(--danger); }
+    .btn .cnt { background: var(--brand); color: #fff; }
+    .ib svg { width: 17px; height: 17px; }
+    .ic { border-radius: 9px; width: 30px; height: 30px; transition: background .15s, border-color .15s, color .15s; }
+    .ic:hover { background: var(--pale); }
+    .ic.go:hover { background: var(--green-deep); }
+
+    /* tables */
+    .sch-table { border: 1px solid var(--line); border-radius: 12px; border-collapse: separate; border-spacing: 0; overflow: hidden; }
+    .sch-table th { background: var(--brand); border-bottom: 2px solid var(--gold); font-weight: 700; }
+    .sch-table tbody tr:not(.grp):hover td { background: color-mix(in srgb, var(--brand) 5%, #fff); }
+    .chip { border-radius: 10px; background: #fff; }
+    .chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); }
+
+    /* evaluation form */
+    .qgrp { border-radius: 14px; }
+    .qgrp-head { background: var(--field); border-bottom: 1px solid var(--line); box-shadow: inset 4px 0 0 var(--gold); }
+    .qopt { border-radius: 9px; border-color: #d5ddd3; transition: background .12s, border-color .12s, color .12s; }
+
+    /* footer */
+    .pfoot { background: #fff; border-top: 1px solid var(--line); }
+    .pf-stats span { border-radius: 10px; background: var(--field); border: 1px solid var(--line); border-inline-start: 4px solid var(--gold); }
+
+    @media (max-width: 600px) {
+      html.th-green:root:root { --page-bg: linear-gradient(180deg, #0d5f37 0, #0d5f37 150px, #f1f4f0 150px); }
+      .panel { padding: 16px 14px; }
+      .brand h1 { font-size: 1.3rem; }
+      .stats .dk-tnum { font-size: 1.6rem; }
+    }
+  }
+</style>
 </head>
 <body>
 
@@ -850,7 +972,8 @@
     <div class="logo-box" id="brandLogo"></div>
     <div class="brand">
       <div class="org" id="brandName"></div>
-      <h1>نظام تقييم الزيارات الميدانية للحلقات</h1>
+      <h1 class="rf-title"><svg class="rf-logo" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="16" fill="#0e5c37"/><rect x="5" y="5" width="54" height="54" rx="13" fill="none" stroke="#c79b2c" stroke-opacity=".45" stroke-width="1.2"/><ellipse cx="32" cy="53" rx="11" ry="2.6" fill="#d9b552" fill-opacity=".45"/><path d="M32 9c-9.6 0-17.4 7.5-17.4 16.8C14.6 38.3 32 53 32 53s17.4-14.7 17.4-27.2C49.4 16.5 41.6 9 32 9z" fill="#c79b2c"/><circle cx="32" cy="25.6" r="11.6" fill="#fff"/><path d="M23.6 21.4c2.9-1 5.7-.7 8.4 1 2.7-1.7 5.5-2 8.4-1v9.4c-2.9-1-5.7-.7-8.4 1-2.7-1.7-5.5-2-8.4-1z" fill="#0e5c37"/><path d="M32 22.4v9.4" stroke="#fff" stroke-width="1.3"/><path d="M28.6 17.2l1.7 1.6 3.3-3.3" fill="none" stroke="#c79b2c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>نظام رِفاد</span></h1>
+      <div class="rf-tag">تقييم الزيارات الميدانية للحلقات</div>
     </div>
     <div class="top-meta" aria-label="تاريخ اليوم"><span class="tm-k">اليوم</span><b id="todayWk"></b><small><span id="todayHj"></span> • <span id="todayGr"></span> م</small></div>
     <button class="top-gear" id="openSettings" type="button" title="الإعدادات" aria-label="الإعدادات" aria-haspopup="dialog"><span data-ic="gear"></span></button>
@@ -1227,7 +1350,7 @@
 
 <footer class="pfoot">
   <div class="pf-in">
-    <div class="pf-brand"><div class="logo-box" id="footLogo"></div><div><b id="footOrg"></b><small>نظام تقييم الزيارات الميدانية للحلقات</small></div></div>
+    <div class="pf-brand"><div class="logo-box" id="footLogo"></div><div><b id="footOrg"></b><small>نظام رِفاد لتقييم الزيارات الميدانية للحلقات</small></div></div>
     <div class="pf-stats"><span>الحلقات<b id="footHal">٠</b></span><span>الزيارات المسجلة<b id="footVis">٠</b></span><span>العام<b id="footYear"></b></span></div>
   </div>
   <div class="pf-bar"></div>
@@ -1267,19 +1390,21 @@
     return e;
   }
 
-  var ICON_PRINT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="9" rx="2"/><path d="M7 14h10v7H7z"/></svg>';
-  var ICON_TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg>';
-  var ICON_SAVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>';
-  var ICON_TABLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg>';
-  var ICON_CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8 14h2M12 14h2M8 18h2M12 18h2"/></svg>';
-  var ICON_CLIP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9z"/><path d="M9 12h6M9 16h4"/></svg>';
-  function svg(inner) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>'; }
+  function svg(inner) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>'; }
+  var ICON_PRINT = svg('<path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/>');
+  var ICON_TRASH = svg('<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6M14 11v6"/>');
+  var ICON_SAVE = svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>');
+  var ICON_TABLE = svg('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M12 3v18"/>');
+  var ICON_CAL = svg('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>');
+  var ICON_CLIP = svg('<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/>');
   var ICON_PLUS = svg('<path d="M12 5v14M5 12h14"/>');
-  var ICON_IMPORT = svg('<path d="M12 20V9"/><path d="M7 14l5-5 5 5"/><path d="M5 4h14"/>');
-  var ICON_AUTO = svg('<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>');
-  var ICON_EDIT = svg('<path d="M4 20h4l10-10-4-4L4 16z"/><path d="M13 7l4 4"/>');
-  var ICON_CLOCK = svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>');
-  var ICON_CALPLUS = svg('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>');
+  var ICON_IMPORT = svg('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>');
+  var ICON_AUTO = svg('<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>');
+  var ICON_EDIT = svg('<path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/><path d="M15 5l4 4"/>');
+  var ICON_CLOCK = svg('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>');
+  var ICON_CALPLUS = svg('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4"/>');
+  var ICON_DB = svg('<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>');
+  var ICON_CHART = svg('<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9M13 17V5M8 17v-3"/>');
   var EMBLEM = '<svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="2.5"/><path d="M32 24c-5-3-12-3.5-18-2v24c6-1.5 13-1 18 2 5-3 12-3.5 18-2V22c-6-1.5-13-1-18 2z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M32 24v24" stroke="currentColor" stroke-width="2.5"/><path d="M32 8l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" fill="currentColor"/></svg>';
 
   function iconBtn(cls, icon, label, title) {
@@ -3634,7 +3759,7 @@
     renderBase();
     baseSay("baseMsg", "تم مسح القاعدة.", "ok");
   });
-  $("tiBase").innerHTML = svg('<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>');
+  $("tiBase").innerHTML = ICON_DB;
   $("tabBase").addEventListener("click", function () { switchTab("base"); });
 
   function fillFromHalqa() {
@@ -3652,15 +3777,15 @@
   var ICONS = {
     clip: ICON_CLIP,
     cal: ICON_CAL,
-    book: svg('<path d="M4 5c3-1.5 6-1.5 8 0 2-1.5 5-1.5 8 0v14c-3-1.5-6-1.5-8 0-2-1.5-5-1.5-8 0z"/><path d="M12 5v14"/>'),
+    book: svg('<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>'),
     mosque: svg('<path d="M12 2.5c.9 1.8 3.6 3 3.6 6a3.6 3.6 0 0 1-7.2 0c0-3 2.7-4.2 3.6-6z"/><path d="M4 21v-7h16v7"/><path d="M2.5 21h19"/><path d="M10 21v-3.5a2 2 0 0 1 4 0V21"/>'),
-    teacher: svg('<circle cx="12" cy="8" r="3.5"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/>'),
-    people: svg('<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14.2c3 .3 5 2.5 5 5.8"/>'),
-    pin: svg('<path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>'),
-    star: svg('<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'),
-    alert: svg('<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>'),
+    teacher: svg('<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>'),
+    people: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>'),
+    pin: svg('<path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>'),
+    star: svg('<path d="M11.5 2.3a.53.53 0 0 1 .95 0l2.31 4.68a2.12 2.12 0 0 0 1.6 1.16l5.16.76a.53.53 0 0 1 .3.9l-3.74 3.64a2.12 2.12 0 0 0-.61 1.88l.88 5.14a.53.53 0 0 1-.77.56l-4.62-2.43a2.12 2.12 0 0 0-1.97 0L6.4 21.01a.53.53 0 0 1-.77-.56l.88-5.14a2.12 2.12 0 0 0-.61-1.88L2.16 9.8a.53.53 0 0 1 .3-.9l5.16-.76a2.12 2.12 0 0 0 1.6-1.16z"/>'),
+    alert: svg('<path d="M21.73 18l-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>'),
     hourglass: svg('<path d="M6 3h12M6 21h12"/><path d="M7 3c0 5 5 6 5 9s-5 4-5 9"/><path d="M17 3c0 5-5 6-5 9s5 4 5 9"/>'),
-    qbank: svg('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.6a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.1.9-1.1 1.8"/><path d="M12 17h.01"/>'),
+    qbank: svg('<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>'),
     gear: svg('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
     list: svg('<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/>'),
     trend: svg('<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>')
@@ -3881,7 +4006,7 @@
     var issued = "";
     try { issued = new Date().toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" }); } catch (e) {}
     var foot = el("div", "dk-foot");
-    foot.appendChild(el("span", "", "نظام تقييم الزيارات الميدانية للحلقات"));
+    foot.appendChild(el("span", "", "نظام رِفاد لتقييم الزيارات الميدانية للحلقات"));
     foot.appendChild(el("span", "", "صدرت بتاريخ " + issued));
     box.appendChild(foot);
   }
@@ -3906,7 +4031,7 @@
   $("dashPrint").innerHTML = ICON_CAL + "<span>طباعة اللوحة</span>";
   $("dashPrint").addEventListener("click", openDashPrint);
   $("tabDash").addEventListener("click", function () { switchTab("dash"); });
-  $("tiDash").innerHTML = ICONS.trend;
+  $("tiDash").innerHTML = ICON_CHART;
   Array.prototype.forEach.call(document.querySelectorAll("[data-ic]"), function (n) { n.innerHTML = ICONS[n.getAttribute("data-ic")] || ""; });
 
   /* ---------- settings ---------- */
