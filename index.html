@@ -805,8 +805,25 @@
   html.lay-side .tab:hover { background: var(--pale); }
   html.lay-side .tab[aria-selected="true"] { background: var(--brand); color: #fff; box-shadow: none; }
   html.lay-side .tab .tabbadge { margin-inline-start: auto; }
-  html.lay-side #viewVisits, html.lay-side #viewDash, html.lay-side #viewSchedule { grid-column: 2; grid-row: 1; min-width: 0; }
+  html.lay-side #viewVisits, html.lay-side #viewDash, html.lay-side #viewSchedule, html.lay-side #viewBase { grid-column: 2; grid-row: 1; min-width: 0; }
   #schSort { width: auto; min-width: 230px; }
+
+  /* ===== Main base (القاعدة الرئيسية) ===== */
+  .base-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .base-bar input[type="search"] { flex: 1 1 240px; }
+  .base-bar select { width: auto; min-width: 170px; }
+  .base-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 12px; border-radius: 10px; background: var(--field); border: 1px solid var(--line); }
+  .base-sum b { color: var(--brand); }
+  .base-sum .grow { flex: 1; }
+  .base-wrap { overflow-x: auto; }
+  .base-table td.ck, .base-table th.ck { width: 44px; text-align: center; }
+  .base-table input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--brand); cursor: pointer; vertical-align: middle; }
+  .base-table tr.on td { background: color-mix(in srgb, var(--brand) 9%, var(--surface)); }
+  .sch-table.base-table tbody tr.grp td { background: color-mix(in srgb, var(--brand) 14%, var(--surface)); color: var(--ink); font-weight: 700; padding: 7px 10px; border-top: 2px solid var(--gold); }
+  .base-table tr.grp label { display: inline-flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; font-weight: 700; }
+  .base-table tr.grp .gcount { opacity: .8; font-weight: 500; font-size: .8rem; }
+  .base-table .inS { display: inline-block; padding: 0 8px; border-radius: 99px; font-size: .74rem; font-weight: 600; background: var(--brand); color: var(--brand-ink); white-space: nowrap; }
+  @media (max-width: 860px) { .base-bar select { width: 100%; } }
   @media (min-width: 1600px) { html.lay-side .wrap, html.lay-side .top-in { max-width: 1700px; } }
   @media (min-width: 961px) and (max-width: 1599px) {
     html.lay-side .wrap { grid-template-columns: 78px minmax(0, 1fr); column-gap: 18px; }
@@ -843,6 +860,7 @@
 <div class="wrap">
 
   <nav class="tabs" role="tablist" aria-label="أقسام الصفحة">
+    <button class="tab" id="tabBase" role="tab" type="button" aria-selected="false"><span class="ti" id="tiBase"></span><span>القاعدة الرئيسية</span></button>
     <button class="tab" id="tabVisits" role="tab" type="button" aria-selected="true"><span class="ti" id="tiVisits"></span><span>الزيارات والتقييم</span></button>
     <button class="tab" id="tabSchedule" role="tab" type="button" aria-selected="false"><span class="ti" id="tiSchedule"></span><span>جدول الزيارات</span><span class="tabbadge" id="tabBadge" hidden></span></button>
     <button class="tab" id="tabDash" role="tab" type="button" aria-selected="false"><span class="ti" id="tiDash"></span><span>لوحة المؤشرات</span></button>
@@ -943,6 +961,50 @@
         </div>
       </div>
       <div class="dash" id="dash"></div>
+    </section>
+  </div>
+
+  <div id="viewBase" hidden>
+    <section class="panel" aria-labelledby="baseTitle">
+      <div class="panel-head">
+        <h2 id="baseTitle">القاعدة الرئيسية</h2>
+        <div class="head-acts">
+          <button class="btn ghost ib" id="baseImpBtn" type="button" aria-expanded="false" aria-controls="baseImport"></button>
+          <button class="btn ghost ib danger" id="baseClear" type="button">مسح القاعدة</button>
+        </div>
+      </div>
+      <p class="hint-s" style="margin-top:0">هنا كل حلقات الجمعية. حدّد الحلقات اللي تبي تزورها واضغط «إضافة المحدد إلى جدول الزيارات»، أو حدّد مكانًا كاملًا من عنوانه. والحلقات اللي في الجدول عليها علامة «في الجدول».</p>
+
+      <div class="tools" id="baseImport" hidden>
+        <p class="hint-s" style="margin-top:0">الصق الحلقات من Excel مباشرة، أو اكتب كل حلقة في سطر بهذا الترتيب: الحلقة | المسجد | المكان | اسم المعلم. القاعدة تنحفظ في هذا المتصفح فقط.</p>
+        <textarea id="baseText" placeholder="خبيب بن عدي | جامع خبيب بن عدي | مخطط 8 | اسم المعلم"></textarea>
+        <button class="btn ghost" id="baseImpGo" type="button">حفظ في القاعدة</button>
+        <p class="msg" id="baseImpMsg" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="base-bar">
+        <input id="bq" type="search" placeholder="ابحث باسم الحلقة أو المعلم أو المسجد" aria-label="بحث في القاعدة">
+        <select id="bArea" aria-label="تصفية حسب المكان"><option value="all">كل الأماكن</option></select>
+        <select id="bShow" aria-label="عرض"><option value="all">كل الحلقات</option><option value="out">غير الموجودة في الجدول</option><option value="in">الموجودة في الجدول</option></select>
+      </div>
+
+      <div class="base-sum">
+        <span>المحدد: <b id="bSel">٠</b></span>
+        <span>في الجدول: <b id="bIn">٠</b> من <b id="bAll">٠</b></span>
+        <span class="grow"></span>
+        <button class="btn ghost sm" id="bSelAll" type="button">تحديد الظاهر</button>
+        <button class="btn ghost sm" id="bSelNone" type="button">إلغاء التحديد</button>
+        <button class="btn ghost sm danger" id="bRemove" type="button">إزالة المحدد من الجدول</button>
+        <button class="btn sm" id="bAdd" type="button">إضافة المحدد إلى جدول الزيارات</button>
+      </div>
+      <p class="msg" id="baseMsg" role="status" aria-live="polite"></p>
+
+      <div class="base-wrap">
+        <table class="sch-table base-table">
+          <thead><tr><th class="ck"><input type="checkbox" id="bAllCk" aria-label="تحديد كل الظاهر"></th><th>م</th><th>اسم الحلقة</th><th>المسجد</th><th>المكان</th><th>اسم المعلم</th><th>الحالة</th></tr></thead>
+          <tbody id="baseBody"></tbody>
+        </table>
+      </div>
     </section>
   </div>
 
@@ -2754,16 +2816,19 @@
   }
 
   function switchTab(name) {
-    var sch = name === "schedule", dsh = name === "dash";
-    $("viewVisits").hidden = sch || dsh;
+    var sch = name === "schedule", dsh = name === "dash", bas = name === "base";
+    $("viewVisits").hidden = sch || dsh || bas;
     $("viewSchedule").hidden = !sch;
     $("viewDash").hidden = !dsh;
-    document.body.classList.toggle("sched", sch);
-    $("tabVisits").setAttribute("aria-selected", (!sch && !dsh) ? "true" : "false");
+    $("viewBase").hidden = !bas;
+    document.body.classList.toggle("sched", sch || bas);
+    $("tabVisits").setAttribute("aria-selected", (!sch && !dsh && !bas) ? "true" : "false");
     $("tabSchedule").setAttribute("aria-selected", sch ? "true" : "false");
     $("tabDash").setAttribute("aria-selected", dsh ? "true" : "false");
+    $("tabBase").setAttribute("aria-selected", bas ? "true" : "false");
     if (sch) renderSchedule();
     if (dsh) renderDash();
+    if (bas) renderBase();
   }
 
   function goRegister(h) {
@@ -3394,6 +3459,184 @@
   $("tabVisits").addEventListener("click", function () { switchTab("visits"); });
   $("tabSchedule").addEventListener("click", function () { switchTab("schedule"); });
 
+  /* ---------- main base (القاعدة الرئيسية) ---------- */
+  var BASE_KEY = "halaqat_base_v1";
+  var base = [];
+  var baseSel = {};
+  try { var bd = JSON.parse(localStorage.getItem(BASE_KEY) || "[]"); base = Array.isArray(bd) ? bd : []; } catch (e) { base = []; }
+  function persistBase() { try { localStorage.setItem(BASE_KEY, JSON.stringify(base)); return true; } catch (e) { return false; } }
+  function findBase(name) {
+    var n = norm(name);
+    for (var i = 0; i < base.length; i++) if (norm(base[i].name) === n) return base[i];
+    return null;
+  }
+  function inSchedule(b) { return !!findHalqa(b.name); }
+  function baseVisible() {
+    var q = norm($("bq").value), ar = $("bArea").value, sh = $("bShow").value;
+    return base.filter(function (b) {
+      if (ar !== "all" && areaKey(b.area) !== ar) return false;
+      var ins = inSchedule(b);
+      if (sh === "in" && !ins) return false;
+      if (sh === "out" && ins) return false;
+      if (q && norm([b.name, b.mosque, b.area, b.teacher].join(" ")).indexOf(q) === -1) return false;
+      return true;
+    });
+  }
+  function baseSay(id, t, kind) { hSay(id, t, kind); }
+
+  function renderBase() {
+    var areas = {}, ao = [];
+    base.forEach(function (b) { var k = areaKey(b.area); if (!areas[k]) { areas[k] = b.area || "بدون مكان"; ao.push(k); } });
+    ao.sort(function (a, b) { return areas[a].localeCompare(areas[b], "ar"); });
+    var sa = $("bArea"), cur = sa.value;
+    sa.textContent = "";
+    sa.appendChild(mkOpt("all", "كل الأماكن"));
+    ao.forEach(function (k) { sa.appendChild(mkOpt(k, areas[k])); });
+    sa.value = areas[cur] ? cur : "all";
+
+    var rows = baseVisible();
+    var groups = {}, go = [];
+    rows.forEach(function (b) { var k = areaKey(b.area); if (!groups[k]) { groups[k] = []; go.push(k); } groups[k].push(b); });
+    go.sort(function (a, b) { return areas[a].localeCompare(areas[b], "ar"); });
+
+    var body = $("baseBody");
+    body.textContent = "";
+    if (!base.length) {
+      var tr0 = el("tr"), td0 = el("td", "empty", "القاعدة فاضية. اضغط «استيراد الحلقات» والصق قائمة الحلقات من Excel.");
+      td0.colSpan = 7; tr0.appendChild(td0); body.appendChild(tr0);
+    } else if (!rows.length) {
+      var tr1 = el("tr"), td1 = el("td", "empty", "ما فيه حلقات تطابق البحث.");
+      td1.colSpan = 7; tr1.appendChild(td1); body.appendChild(tr1);
+    }
+    var n = 0;
+    go.forEach(function (k) {
+      var list = groups[k];
+      var gtr = el("tr", "grp"), gtd = el("td");
+      gtd.colSpan = 7;
+      var gl = el("label"), gck = document.createElement("input");
+      gck.type = "checkbox";
+      var allOn = list.every(function (b) { return baseSel[b.id]; });
+      gck.checked = allOn;
+      gck.indeterminate = !allOn && list.some(function (b) { return baseSel[b.id]; });
+      gck.addEventListener("change", function () {
+        list.forEach(function (b) { if (gck.checked) baseSel[b.id] = true; else delete baseSel[b.id]; });
+        renderBase();
+      });
+      gl.appendChild(gck);
+      gl.appendChild(el("span", "", areas[k]));
+      gl.appendChild(el("span", "gcount", "(" + num(list.length) + " حلقة)"));
+      gtd.appendChild(gl); gtr.appendChild(gtd); body.appendChild(gtr);
+      list.forEach(function (b) {
+        n++;
+        var ins = inSchedule(b);
+        var tr = el("tr", baseSel[b.id] ? "on" : "");
+        var c = el("td", "ck"), ck = document.createElement("input");
+        ck.type = "checkbox"; ck.checked = !!baseSel[b.id];
+        ck.setAttribute("aria-label", "تحديد حلقة " + b.name);
+        ck.addEventListener("change", function () {
+          if (ck.checked) baseSel[b.id] = true; else delete baseSel[b.id];
+          renderBase();
+        });
+        c.appendChild(ck); tr.appendChild(c);
+        tr.appendChild(el("td", "", num(n)));
+        tr.appendChild(el("td", "hn", b.name));
+        tr.appendChild(el("td", "", b.mosque || "—"));
+        tr.appendChild(el("td", "", b.area || "—"));
+        tr.appendChild(el("td", "", b.teacher || "—"));
+        var st = el("td");
+        st.appendChild(ins ? el("span", "inS", "في الجدول") : el("span", "inl", "—"));
+        tr.appendChild(st);
+        body.appendChild(tr);
+      });
+    });
+
+    var selCount = Object.keys(baseSel).length;
+    $("bSel").textContent = num(selCount);
+    $("bIn").textContent = num(base.filter(inSchedule).length);
+    $("bAll").textContent = num(base.length);
+    var vis = rows.length && rows.every(function (b) { return baseSel[b.id]; });
+    $("bAllCk").checked = !!vis;
+    $("bAllCk").indeterminate = !vis && rows.some(function (b) { return baseSel[b.id]; });
+  }
+
+  $("baseImpBtn").innerHTML = ICON_IMPORT + "<span>استيراد الحلقات</span>";
+  $("baseImpBtn").addEventListener("click", function () {
+    var open = $("baseImport").hidden;
+    $("baseImport").hidden = !open;
+    this.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) $("baseText").focus();
+  });
+  $("baseImpGo").addEventListener("click", function () {
+    var added = 0, skipped = 0;
+    $("baseText").value.split(/\r?\n/).forEach(function (ln) {
+      ln = ln.trim();
+      if (!ln) return;
+      var p = ln.split(/\s*[|\t]\s*/).map(function (x) { return x.replace(/\s+/g, " ").trim(); });
+      var name = p[0] || "";
+      if (!name) return;
+      var mosque = p[1] || "", area = p[2] || "", teacher = p[3] || "";
+      var ex = findBase(name);
+      if (ex) {
+        if (norm(ex.teacher) === norm(teacher)) { skipped++; return; }
+        name = name + " (" + (teacher.split(" ")[0] || num(base.length + 1)) + ")";
+        if (findBase(name)) { skipped++; return; }
+      }
+      base.push({ id: Date.now() * 1000 + Math.floor(Math.random() * 1000) + added, name: name, mosque: mosque, area: area, teacher: teacher });
+      added++;
+    });
+    if (added) persistBase();
+    if (added) $("baseText").value = "";
+    baseSay("baseImpMsg", added || skipped ? "تمت إضافة " + num(added) + " حلقة إلى القاعدة" + (skipped ? "، وتجاهلت " + num(skipped) + " مكررة." : ".") : "ما لقيت حلقات في النص.", added ? "ok" : "err");
+    renderBase();
+  });
+  $("bq").addEventListener("input", renderBase);
+  $("bArea").addEventListener("change", renderBase);
+  $("bShow").addEventListener("change", renderBase);
+  $("bAllCk").addEventListener("change", function () {
+    var on = this.checked;
+    baseVisible().forEach(function (b) { if (on) baseSel[b.id] = true; else delete baseSel[b.id]; });
+    renderBase();
+  });
+  $("bSelAll").addEventListener("click", function () { baseVisible().forEach(function (b) { baseSel[b.id] = true; }); renderBase(); });
+  $("bSelNone").addEventListener("click", function () { baseSel = {}; renderBase(); });
+  function selectedBase() { return base.filter(function (b) { return baseSel[b.id]; }); }
+  $("bAdd").addEventListener("click", function () {
+    var sel = selectedBase();
+    if (!sel.length) { baseSay("baseMsg", "حدّد الحلقات اللي تبي تضيفها أول.", "err"); return; }
+    var added = 0, already = 0;
+    sel.forEach(function (b) {
+      if (findHalqa(b.name)) { already++; return; }
+      ensureHalqa(b.name, b.teacher, b.mosque, b.area, "");
+      added++;
+    });
+    if (added) persistHal();
+    baseSel = {};
+    renderAll();
+    baseSay("baseMsg", added ? "تمت إضافة " + num(added) + " حلقة إلى جدول الزيارات" + (already ? "، و" + num(already) + " موجودة فيه من قبل." : ".") + " حدد مواعيدها من جدول الزيارات أو بالجدولة التلقائية." : "كل الحلقات المحددة موجودة في الجدول.", added ? "ok" : "err");
+  });
+  $("bRemove").addEventListener("click", function () {
+    var sel = selectedBase().filter(inSchedule);
+    if (!sel.length) { baseSay("baseMsg", "ما فيه حلقات محددة موجودة في الجدول.", "err"); return; }
+    if (!confirm("إزالة " + sel.length + " حلقة من جدول الزيارات؟ الزيارات المسجلة لها تبقى.")) return;
+    var names = {};
+    sel.forEach(function (b) { names[norm(b.name)] = true; });
+    halaqat = halaqat.filter(function (h) { return !names[norm(h.name)]; });
+    persistHal();
+    baseSel = {};
+    renderAll();
+    baseSay("baseMsg", "تمت إزالة " + num(sel.length) + " حلقة من الجدول.", "ok");
+  });
+  $("baseClear").addEventListener("click", function () {
+    if (!base.length) return;
+    if (!confirm("مسح كل حلقات القاعدة الرئيسية؟ جدول الزيارات والزيارات المسجلة ما تتأثر.")) return;
+    base = []; baseSel = {};
+    persistBase();
+    renderBase();
+    baseSay("baseMsg", "تم مسح القاعدة.", "ok");
+  });
+  $("tiBase").innerHTML = svg('<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>');
+  $("tabBase").addEventListener("click", function () { switchTab("base"); });
+
   function fillFromHalqa() {
     var h = findHalqa($("halqa").value);
     if (!h) return;
@@ -3669,7 +3912,7 @@
   /* ---------- settings ---------- */
   var SET_KEY = "halaqat_settings_v1";
   var WD_NAMES = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-  var BACKUP_KEYS = [KEY, HAL_KEY, ORG_KEY, COUNTER_KEY, QB_KEY, SET_KEY, "halaqat_dstyle_v2", SEED_KEY, PRESET_KEY];
+  var BACKUP_KEYS = [KEY, HAL_KEY, ORG_KEY, COUNTER_KEY, QB_KEY, SET_KEY, "halaqat_dstyle_v2", SEED_KEY, PRESET_KEY, "halaqat_base_v1"];
   function defaultSettings() { return { visitors: [], workDays: [0, 1, 2, 3, 4], perDay: 3, grades: [90, 80, 70, 60], theme: "green", layout: "side" }; }
   var settings = defaultSettings();
   var pendingImport = null;
@@ -3954,6 +4197,7 @@
   }
   function renderAll() {
     renderStats(); renderList(); refreshDatalist(); renderSchedule(); renderDash(); renderToday();
+    if (!$("viewBase").hidden) renderBase();
     $("footHal").textContent = num(halaqat.length);
     $("footVis").textContent = num(visits.length);
   }
