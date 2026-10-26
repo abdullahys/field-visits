@@ -1045,7 +1045,14 @@
   .lg-org { flex-direction: column; justify-content: center; text-align: center; gap: 8px; }
   .lg-card h2.t, .lg-card .s, .lg-err, .lg-foot { text-align: center; }
   .lg-row { justify-content: center; }
-  @media (max-width: 860px) { .lg-brand { gap: 6px; } }
+  .lg-brand { margin-top: 48px; gap: 14px; }
+  .lg-brand svg { width: 104px; height: 104px; border-radius: 26px; }
+  .lg-brand b { font-size: 2rem; }
+  @media (max-width: 860px) {
+    .lg-brand { gap: 8px; margin-top: 14px; }
+    .lg-brand svg { width: 72px; height: 72px; border-radius: 18px; }
+    .lg-brand b { font-size: 1.5rem; }
+  }
   @media print { #login { display: none !important; } }
 
   /* welcome banner */
