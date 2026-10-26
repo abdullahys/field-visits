@@ -1035,6 +1035,17 @@
     .lg-side { padding: 20px 16px 28px; align-items: flex-start; }
     .lg-card { padding: 24px 20px 20px; }
   }
+  /* centered login texts */
+  .lg-art { text-align: center; }
+  .lg-brand { flex-direction: column; justify-content: center; gap: 10px; }
+  .lg-head p { margin-inline: auto; }
+  .lg-scene { justify-content: center; }
+  .lg-quote { justify-content: center; }
+  .lg-quote::after { content: ""; width: 36px; height: 2px; background: #d3a22a; }
+  .lg-org { flex-direction: column; justify-content: center; text-align: center; gap: 8px; }
+  .lg-card h2.t, .lg-card .s, .lg-err, .lg-foot { text-align: center; }
+  .lg-row { justify-content: center; }
+  @media (max-width: 860px) { .lg-brand { gap: 6px; } }
   @media print { #login { display: none !important; } }
 
   /* welcome banner */
