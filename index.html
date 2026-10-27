@@ -1807,7 +1807,7 @@
       lines.push("", "◆ " + CRITERIA[ci].name + ":");
       groups[ci].sort(function (x, y) { return x.a - y.a; }).forEach(function (it) {
         n++;
-        lines.push(numL(n) + ". " + recFor(it.q) + " (التقدير: " + GRADE_NAMES[6 - it.a] + ")");
+        lines.push(numL(n) + ". " + recFor(it.q));
       });
     });
     return lines.join("\n");
