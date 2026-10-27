@@ -2754,7 +2754,7 @@
 
     if (v.photos && v.photos.length) {
       var ph = el("div", "rp-photos");
-      ph.appendChild(el("h2", "", "صور الزيارة (" + num(v.photos.length) + ")"));
+      ph.appendChild(el("h2", "", "صور الزيارة"));
       var n = v.photos.length;
       var grid = el("div", "rp-pgrid rp-pgrid-big");
       grid.style.gridTemplateColumns = "repeat(" + Math.min(n, 3) + ", minmax(0, 1fr))";
