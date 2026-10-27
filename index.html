@@ -329,6 +329,15 @@
   .rp-hero { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 14px 0; padding: 14px 18px; border-radius: 10px; background: var(--cbg); border-inline-start: 6px solid var(--c); }
   .rp-halqa { font-family: "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 24px; font-weight: 700; line-height: 1.4; }
   .rp-halqa-k { color: #8a6d12; font-size: 12px; font-weight: 700; line-height: 1.3; }
+  /* overall grade box */
+  .rp .rp-hero .rp-score { min-width: 170px; padding: 12px 18px 14px; border-radius: 14px; background: var(--c); color: #fff; text-align: center; box-shadow: 0 8px 18px -12px rgba(0,0,0,.5); }
+  .rp .rp-hero .rp-score span { display: block; color: rgba(255,255,255,.88); font-size: 11.5px; font-weight: 700; }
+  .rp .rp-hero .rp-score b { display: block; color: #fff; font-family: Cairo, "IBM Plex Sans Arabic", sans-serif; font-size: 30px; font-weight: 900; line-height: 1.25; }
+  .rp .rp-hero .rp-score .pts { margin-top: 2px; font-size: 13px; font-weight: 800; color: #fff; }
+  .rp .rp-hero .rp-score .pbar { height: 6px; margin-top: 7px; border-radius: 3px; background: rgba(255,255,255,.3); overflow: hidden; }
+  .rp .rp-hero .rp-score .pbar i { display: block; height: 100%; background: #fff; border-radius: 3px; }
+  .rp td.pt { white-space: nowrap; text-align: center; font-weight: 700; color: #33463e; width: 90px; }
+  .rp tfoot td.pt { color: var(--c); font-size: 13px; }
   .rp-sub { color: #4a5a53; }
   .rp-score { text-align: center; min-width: 110px; }
   .rp-score b { display: block; font-size: 38px; line-height: 1.1; color: var(--c); font-weight: 700; }
@@ -1710,8 +1719,9 @@
       var x = v.scores[i];
       if (x !== null && x !== undefined) { s += x; m += CRITERIA[i].max; }
     }
-    return m ? s / m * 100 : 0;
+    return m ? Math.round(s / m * 1000) / 10 : 0;
   }
+  function fmtPts(x, max) { return num(Math.round(x * 10) / 10) + " من " + num(max); }
   function status(a) {
     var g = gradeIdx(a);
     return { k: g <= 2 ? "good" : g === 3 ? "mid" : "warn", t: GRADE_NAMES[g], g: g };
@@ -1945,7 +1955,7 @@
       chip.className = "qchip" + (pc === null ? "" : " t" + gradeIdx(pc));
     });
     var tot = total({ scores: sc });
-    $("total").textContent = items.length ? gradeName(tot) : "—";
+    $("total").textContent = items.length ? gradeName(tot) + " • " + fmtPts(tot, 100) : "—";
     $("totalBox").className = "total" + (items.length ? " t" + gradeIdx(tot) : "");
     $("totalLabel").textContent = "• أُجيب على " + numL(items.length) + " من " + numL(qs.length) + " سؤال";
     syncRecs();
@@ -2377,7 +2387,7 @@
       meta.unshift("تقرير رقم " + fmtNo(v.no));
       left.appendChild(el("div", "meta", meta.join(" • ")));
       top.appendChild(left);
-      top.appendChild(el("span", "badge", st.t));
+      top.appendChild(el("span", "badge", st.t + " • " + num(a) + "/" + num(100)));
       li.appendChild(top);
 
       var meter = el("div", "meter");
@@ -2524,6 +2534,11 @@
     var sc = el("div", "rp-score");
     sc.appendChild(el("span", "", "التقدير العام"));
     sc.appendChild(el("b", "", st.t));
+    sc.appendChild(el("div", "pts", "الدرجة: " + fmtPts(tot, 100)));
+    var pb = el("div", "pbar"), pbi = el("i");
+    pbi.style.width = Math.max(0, Math.min(100, tot)) + "%";
+    pb.appendChild(pbi);
+    sc.appendChild(pb);
     hero.appendChild(sc);
     r.appendChild(hero);
 
@@ -2539,7 +2554,7 @@
     var table = el("table", "rp-detail");
     var thead = el("thead");
     var htr = el("tr");
-    ["معيار التقييم", "التقدير", "المستوى"].forEach(function (t) { htr.appendChild(el("th", "", t)); });
+    ["معيار التقييم", "التقدير", "الدرجة", "المستوى"].forEach(function (t) { htr.appendChild(el("th", "", t)); });
     thead.appendChild(htr);
     table.appendChild(thead);
     var tbody = el("tbody");
@@ -2559,6 +2574,7 @@
       gp.style.background = RT[gi].c;
       td2.appendChild(gp);
       tr.appendChild(td2);
+      tr.appendChild(el("td", "pt", fmtPts(v.scores[i], c.max)));
       var td3 = el("td", "barcell");
       td3.appendChild(levelDots(gi));
       tr.appendChild(td3);
@@ -2569,6 +2585,7 @@
         var qg = el("td", "qg", GRADE_NAMES[6 - q.a]);
         qg.style.color = RT[6 - q.a].c;
         qtr.appendChild(qg);
+        qtr.appendChild(el("td", ""));
         qtr.appendChild(el("td", ""));
         tbody.appendChild(qtr);
       });
@@ -2582,13 +2599,14 @@
     fgp.style.background = tn.c;
     ftd.appendChild(fgp);
     ftr.appendChild(ftd);
+    ftr.appendChild(el("td", "pt", fmtPts(tot, 100)));
     var ftd3 = el("td", "barcell");
     ftd3.appendChild(levelDots(st.g));
     ftr.appendChild(ftd3);
     tfoot.appendChild(ftr);
     table.appendChild(tfoot);
     r.appendChild(table);
-    if (skipped.length) r.appendChild(el("div", "rp-skip", "معايير لم يشملها هذا النوع من الزيارات: " + skipped.join("، ") + "."));
+    if (skipped.length) r.appendChild(el("div", "rp-skip", "معايير لم يشملها هذا النوع من الزيارات: " + skipped.join("، ") + ". حُسبت الدرجة من ١٠٠ على المعايير المشمولة فقط."));
 
     var notes = el("div", "rp-notes");
     notes.appendChild(el("h2", "", "الملاحظات والتوصيات"));
@@ -2614,15 +2632,6 @@
       ph.appendChild(grid);
       r.appendChild(ph);
     }
-
-    var lg = el("div", "rp-legend");
-    [[1, "ممتاز"], [2, "جيد جدًا"], [3, "جيد"], [4, "مقبول"], [5, "ضعيف"]].forEach(function (l) {
-      var s = el("span", "", l[1]);
-      s.style.setProperty("--d", RT[l[0]].c);
-      lg.appendChild(s);
-    });
-    r.appendChild(lg);
-    r.appendChild(el("div", "rp-skip", "طريقة التقييم: يُقيَّم كل سؤال بأحد خمسة تقديرات، ويُحتسب تقدير كل معيار والتقدير العام من متوسط الإجابات حسب أوزان معايير الجمعية."));
 
     var sign = el("div", "rp-sign");
     var sg = v.sig || {};
