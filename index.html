@@ -471,6 +471,36 @@
     .rp.rp .ht { font-size: 12px; }
     .rp.rp tr.rp-q td { font-size: 13.5px; }
   }
+
+  /* ===== single-visit report on one page ===== */
+  /* normal flow (screen and portrait): details first, then table, notes, photos, signatures */
+  .rp-body { display: flex; flex-direction: column; }
+  .rp-colA, .rp-colB { display: contents; }
+  .rp-body .rp-hero { order: 0; }
+  .rp-body .rp-info { order: 1; }
+  .rp-body .rp-detail { order: 2; }
+  .rp-body .rp-skip { order: 3; }
+  .rp-body .rp-notes { order: 4; }
+  .rp-body .rp-photos { order: 5; }
+  .rp-body .rp-sign { order: 6; }
+  /* landscape: two columns, table on the reading side */
+  .rp.rp-measure.rp-land .rp-body { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .rp.rp-measure.rp-land .rp-colA, .rp.rp-measure.rp-land .rp-colB { display: block; }
+  .rp.rp-measure.rp-land .rp-colB > * { margin-top: 0; }
+  .rp.rp-measure.rp-land .rp-colB > * + * { margin-top: 10px; }
+  .rp.rp-measure.rp-land .rp-hero { margin: 8px 0 10px; }
+  @page vportrait { size: A4 portrait; margin: 12mm; }
+  @page vland { size: A4 landscape; margin: 10mm; }
+  @media print {
+    .rp.rp-one.rp-port { page: vportrait; zoom: var(--fit, 1); }
+    .rp.rp-one.rp-land { page: vland; zoom: var(--fit, 1); }
+    .rp.rp-one .rp-tr, .rp.rp-one tr, .rp.rp-one .rp-hero, .rp.rp-one .rp-notes, .rp.rp-one .rp-sign { break-inside: auto; }
+    .rp.rp-land .rp-body { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .rp.rp-land .rp-colA, .rp.rp-land .rp-colB { display: block; }
+    .rp.rp-land .rp-colB > * { margin-top: 0; }
+    .rp.rp-land .rp-colB > * + * { margin-top: 10px; }
+    .rp.rp-land .rp-hero { margin: 8px 0 10px; }
+  }
 </style>
 
 <style id="dashCss">
@@ -2679,6 +2709,8 @@
     var tn = RT[toneIdx(tot / 100)];
     var r = $("report");
     r.textContent = "";
+    resetFit();
+    r.classList.add("rp-one");
     r.style.setProperty("--c", tn.c);
     r.style.setProperty("--cbg", tn.bg);
 
@@ -2721,7 +2753,11 @@
     pb.appendChild(pbi);
     sc.appendChild(pb);
     hero.appendChild(sc);
-    r.appendChild(hero);
+
+    /* two columns when printed landscape: A = evaluation table, B = grade, details, notes, photos, signatures */
+    var body = el("div", "rp-body"), colA = el("div", "rp-colA"), colB = el("div", "rp-colB");
+    body.appendChild(colA); body.appendChild(colB);
+    colB.appendChild(hero);
 
     var info = el("div", "rp-info");
     [["الجامع/ المسجد", vMosque(v) || "-"], ["المكان", vArea(v) || "-"], ["اسم المعلم", v.teacher || "-"], ["نوع الزيارة", v.type || "-"], ["عدد الحضور", (v.students === "" || v.students == null) ? "-" : num(v.students)], ["عدد الطلاب في نظام إنجازي", hasNum(v.injazi) ? num(v.injazi) : "-"], ["نسبة الحضور", attendPct(v)], ["الزائر", v.visitor || "-"]].forEach(function (p) {
@@ -2730,7 +2766,7 @@
       d.appendChild(el("b", "", p[1]));
       info.appendChild(d);
     });
-    r.appendChild(info);
+    colB.appendChild(info);
 
     var table = el("table", "rp-detail");
     var thead = el("thead");
@@ -2783,13 +2819,13 @@
     ftr.appendChild(ftd3);
     tfoot.appendChild(ftr);
     table.appendChild(tfoot);
-    r.appendChild(table);
-    if (skipped.length) r.appendChild(el("div", "rp-skip", "معايير لم يشملها هذا النوع من الزيارات: " + skipped.join("، ") + ". حُسبت الدرجة من ١٠٠ على المعايير المشمولة فقط."));
+    colA.appendChild(table);
+    if (skipped.length) colA.appendChild(el("div", "rp-skip", "معايير لم يشملها هذا النوع من الزيارات: " + skipped.join("، ") + ". حُسبت الدرجة من ١٠٠ على المعايير المشمولة فقط."));
 
     var notes = el("div", "rp-notes");
     notes.appendChild(el("h2", "", "الملاحظات والتوصيات"));
     notes.appendChild(el("p", "", v.notes || "لا توجد ملاحظات."));
-    r.appendChild(notes);
+    colB.appendChild(notes);
 
     if (v.photos && v.photos.length) {
       var ph = el("div", "rp-photos");
@@ -2807,7 +2843,7 @@
         grid.appendChild(fig);
       });
       ph.appendChild(grid);
-      r.appendChild(ph);
+      colB.appendChild(ph);
     }
 
     var sign = el("div", "rp-sign");
@@ -2827,11 +2863,74 @@
       d.appendChild(el("span", "nm", p[1] || "\u00a0"));
       sign.appendChild(d);
     });
-    r.appendChild(sign);
+    colB.appendChild(sign);
+    r.appendChild(body);
 
     var issued = "";
     try { issued = new Date().toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" }); } catch (e) {}
     r.appendChild(el("div", "rp-foot", "صدر هذا التقرير بتاريخ " + issued));
+  }
+
+  /* ---------- one printed page: pick portrait or landscape, then shrink to fit ---------- */
+  /* compact print styles, written once for the off-screen measurement and once for print */
+  (function () {
+    var R = [
+      "S .rp-head{padding-bottom:6px}", "S .rp-logo{width:56px;height:56px}",
+      "S .rp-org{font-size:19px}", "S .rp-org2,S .rp-meta{font-size:12px;line-height:1.5}",
+      "S .rp-title{font-size:22px;margin-top:6px}", "S .rp-title::after{margin-top:3px}",
+      "S .rp-hero{margin:8px 0;padding:8px 14px}", "S .rp-halqa{font-size:24px;line-height:1.25}",
+      "S .rp-halqa-k{font-size:12px}", "S .rp-sub{font-size:12.5px}",
+      "S .rp-hero .rp-score{padding:6px 14px 8px;min-width:150px}", "S .rp-hero .rp-score b{font-size:28px}",
+      "S .rp-hero .rp-score span{font-size:12px}", "S .rp-hero .rp-score .pts{font-size:13px}", "S .rp-hero .rp-score .pbar{margin-top:4px}",
+      "S .rp-info{gap:6px;margin-bottom:8px}", "S .rp-info div{padding:3px 8px}", "S .rp-info small{font-size:11.5px}", "S .rp-info b{font-size:13px}",
+      "S th{font-size:12.5px;padding:4px 8px}", "S td{padding:2px 8px}",
+      "S tr.rp-c td{padding:2px 8px;line-height:1.3}", "S td .nm{font-size:13px}", "S .gp{font-size:11.5px;padding:0 10px;line-height:1.5}",
+      "S tr.rp-q td{font-size:11.5px;line-height:1.2;padding:0 8px}", "S tfoot td{font-size:13px;padding:2px 8px}",
+      "S .rp-hero{margin:0 0 8px}",
+      "S .rp-lvl i{height:7px;width:14px}", "S .ht{font-size:11px}",
+      "S .rp-notes{padding:6px 10px;margin-top:8px;min-height:0}", "S .rp-notes h2,S .rp-photos h2{font-size:14px;margin-bottom:4px}",
+      "S .rp-notes p{font-size:11.5px;line-height:1.3;column-count:2;column-gap:16px}",
+      "S .rp-photos{padding:6px 10px 8px;margin-top:8px}",
+      "S .rp-pgrid-big{grid-template-columns:repeat(6,minmax(0,1fr))!important;max-width:none!important;gap:6px}", "S .rp-pgrid-big .rp-fig{padding:2px}",
+      "S .rp-sign{margin-top:8px}", "S .rp-sign>div{padding:6px 8px}", "S .rp-sign .lb{font-size:12.5px;min-height:2.2em}",
+      "S .rp-sign .sl{height:64px}", "S .rp-sign .sl img{height:80px;bottom:-10px}", "S .rp-sign .sl img.sig-sup{height:66px}", "S .rp-sign .nm{font-size:13.5px}",
+      "S .rp-foot{margin-top:6px;font-size:11px}", "S .rp-skip{font-size:11px}"
+    ].join("\n");
+    var css = "\n/* one-page compact (generated) */\n" + R.replace(/S /g, ".rp.rp-one.rp-measure ") +
+      "\n@media print{\n" + R.replace(/S /g, ".rp.rp-one ") + "\n}\n";
+    $("reportCss").textContent += css;
+  })();
+  function resetFit() {
+    var r = $("report");
+    r.classList.remove("rp-one", "rp-port", "rp-land");
+    r.style.removeProperty("--fit");
+  }
+  function fitReport() {
+    var r = $("report");
+    r.classList.remove("rp-port", "rp-land");
+    r.style.removeProperty("--fit");
+    if (!r.classList.contains("rp-one")) return;
+    var MM = 96 / 25.4;
+    function measure(mode, widthMm) {
+      var box = document.createElement("div");
+      box.style.cssText = "position:absolute;left:-20000px;top:0;visibility:hidden;width:" + Math.round(widthMm * MM) + "px";
+      var c = r.cloneNode(true);
+      c.removeAttribute("id");
+      c.classList.add("rp-measure", mode);
+      c.style.maxWidth = "none"; c.style.width = "100%"; c.style.padding = "0"; c.style.margin = "0";
+      box.appendChild(c);
+      document.body.appendChild(box);
+      var h = c.scrollHeight;
+      box.parentNode.removeChild(box);
+      return h || 1;
+    }
+    /* printable area of A4 after the page margins below */
+    var fp = Math.min(1, (273 * MM) / measure("rp-port", 186));
+    var fl = Math.min(1, (190 * MM) / measure("rp-land", 277));
+    var land = fl > fp + 0.02;
+    var fit = Math.floor(Math.min(1, (land ? fl : fp) * 0.97) * 1000) / 1000;
+    r.classList.add(land ? "rp-land" : "rp-port");
+    r.style.setProperty("--fit", String(fit));
   }
 
   function docTitle() {
@@ -2944,6 +3043,7 @@
 
   function openTable() {
     current = { isTable: true };
+    resetFit();
     buildTable();
     $("modal").hidden = false;
     document.body.style.overflow = "hidden";
@@ -3112,6 +3212,7 @@
     }
     current = v;
     buildReport(v);
+    fitReport();
     var base = docTitle();
     var html = reportDocument();
     var md = reportMarkdown(v);
@@ -3123,6 +3224,7 @@
     current = v;
     buildReport(v);
     $("modal").hidden = false;
+    fitReport();
     document.body.style.overflow = "hidden";
     $("mClose").focus();
   }
@@ -4011,6 +4113,7 @@
 
   function openSchedulePrint() {
     current = { isSchedule: true };
+    resetFit();
     buildSchedulePrint();
     $("modal").hidden = false;
     document.body.style.overflow = "hidden";
@@ -4586,6 +4689,7 @@
 
   function openDashPrint() {
     current = { isDash: true };
+    resetFit();
     var r = $("report");
     r.textContent = "";
     var clone = $("dash").cloneNode(true);
