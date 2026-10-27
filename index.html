@@ -336,8 +336,12 @@
   .rp .rp-hero .rp-score .pts { margin-top: 2px; font-size: 13px; font-weight: 800; color: #fff; }
   .rp .rp-hero .rp-score .pbar { height: 6px; margin-top: 7px; border-radius: 3px; background: rgba(255,255,255,.3); overflow: hidden; }
   .rp .rp-hero .rp-score .pbar i { display: block; height: 100%; background: #fff; border-radius: 3px; }
-  .rp-sign .sl.has-sig { height: 56px; display: flex; align-items: flex-end; justify-content: center; }
-  .rp-sign .sl img { max-height: 54px; max-width: 90%; object-fit: contain; margin-bottom: -6px; }
+  /* signature row: fixed height for every column so lines and names stay level */
+  .rp .rp-sign { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
+  .rp .rp-sign > div { display: flex; flex-direction: column; }
+  .rp .rp-sign .sl { height: 96px; flex: none; display: flex; align-items: flex-end; justify-content: center; }
+  .rp .rp-sign .sl img { display: block; max-height: 92px; max-width: 96%; object-fit: contain; margin-bottom: -10px; }
+  @media print { .rp .rp-sign .sl { height: 88px; } .rp .rp-sign .sl img { max-height: 84px; } }
   .rp td.pt { white-space: nowrap; text-align: center; font-weight: 700; color: #33463e; width: 90px; }
   .rp tfoot td.pt { color: var(--c); font-size: 13px; }
   .rp-sub { color: #4a5a53; }
