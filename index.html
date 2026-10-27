@@ -7,8 +7,274 @@
 <link rel="icon" type="image/svg+xml" href="rafad-logo.svg">
 <script>
   /* sign-in gate: hides the login screen at once for a remembered session */
-  window.RF_AUTH = "80df23810b5795cfc3156d3adc82e9a62dcf60d4d7bdac670347efa5cfedf226";
-  try { if (localStorage.getItem("rafad_auth_v1") === RF_AUTH || sessionStorage.getItem("rafad_auth_v1") === RF_AUTH) document.documentElement.classList.add("authed"); } catch (e) {}
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      if (/^sb-rbcblduzattrpbpflrbi-auth-token/.test(localStorage.key(i))) { document.documentElement.classList.add("authed"); break; }
+    }
+  } catch (e) {}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+/* ===== Wasl cloud: Supabase sign-in and background sync =====
+   The app keeps working on its localStorage copy. Writes to the synced keys are pushed to Supabase;
+   on start (and after sign-in) the shared data is pulled and the page reloads once if anything changed. */
+(function () {
+  var SB_URL = "https://rbcblduzattrpbpflrbi.supabase.co";
+  var SB_KEY = "sb_publishable_Afv1bvQ8hYUt02D_-sr-ow_qERsXTKV";
+  var VISITS = "halaqat_visits_v2";
+  var KV_KEYS = ["halaqat_list_v1", "halaqat_base_v1", "halaqat_org_v3", "halaqat_qbank_v1", "halaqat_settings_v1", "halaqat_counter_v1"];
+  var STATE_KEY = "wasl_sync_v1";
+  var SIGN_SECS = 60 * 60 * 24 * 7;
+  var ls = window.localStorage;
+  var rawSet = Storage.prototype.setItem, rawRemove = Storage.prototype.removeItem;
+  var sb = null, session = null, pushing = false, again = false, timer = null, statusEl = null;
+  var Cloud = window.WaslCloud = { ready: false, available: false };
+
+  function synced(k) { return k === VISITS || KV_KEYS.indexOf(k) !== -1; }
+  function hash(s) { var x = 5381; for (var i = 0; i < s.length; i++) x = ((x << 5) + x + s.charCodeAt(i)) | 0; return (x >>> 0).toString(36) + "." + s.length; }
+  /* key-order independent JSON (the database stores jsonb with its own key order) */
+  function canon(o) {
+    if (o === null || typeof o !== "object") return JSON.stringify(o);
+    if (Array.isArray(o)) return "[" + o.map(canon).join(",") + "]";
+    return "{" + Object.keys(o).sort().filter(function (k) { return o[k] !== undefined; }).map(function (k) { return JSON.stringify(k) + ":" + canon(o[k]); }).join(",") + "}";
+  }
+  function hv(o) { return hash(canon(o)); }
+  function pathFromUrl(u) {
+    var m = /\/storage\/v1\/object\/(?:sign|authenticated|public)\/photos\/([^?]+)/.exec(u || "");
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function getState() { try { var s = JSON.parse(ls.getItem(STATE_KEY) || "null"); if (s && s.v && s.k) { s.p = s.p || {}; return s; } } catch (e) {} return { v: {}, k: {}, p: {}, init: false }; }
+  function saveState(s) { try { rawSet.call(ls, STATE_KEY, JSON.stringify(s)); } catch (e) {} }
+  function status(kind, text) {
+    Cloud.lastStatus = { kind: kind, text: text };
+    statusEl = statusEl || document.getElementById("syncBadge");
+    if (!statusEl) return;
+    statusEl.hidden = false;
+    statusEl.className = "sync-badge " + kind;
+    statusEl.textContent = text;
+    statusEl.title = text;
+  }
+  Cloud.refreshStatus = function () { if (Cloud.lastStatus) status(Cloud.lastStatus.kind, Cloud.lastStatus.text); };
+
+  /* local writes to synced keys schedule a push */
+  Storage.prototype.setItem = function (k, v) {
+    rawSet.call(this, k, v);
+    if (this === ls && synced(k)) schedulePush();
+  };
+  Storage.prototype.removeItem = function (k) {
+    rawRemove.call(this, k);
+    if (this === ls && synced(k)) schedulePush();
+  };
+  function schedulePush() { clearTimeout(timer); timer = setTimeout(push, 800); }
+
+  /* remote copy of a visit: photos keep only their storage path */
+  function remoteVisit(v, s) {
+    var c = JSON.parse(JSON.stringify(v));
+    c.photos = (v.photos || []).map(function (p) {
+      var path = p.path || pathFromUrl(p.src) || (p.src && p.src.indexOf("data:") === 0 && s.p[hash(p.src)]) || null;
+      return { path: path, cap: p.cap || "" };
+    }).filter(function (p) { return p.path; });
+    return c;
+  }
+  function dataUrlToBlob(u) { return fetch(u).then(function (r) { return r.blob(); }); }
+
+  var current = Promise.resolve(true);
+  function push() {
+    if (!sb || !session) return Promise.resolve(false);
+    if (pushing) { again = true; return current; }
+    if (!navigator.onLine) { status("off", "غير متصل • محفوظ على الجهاز"); return Promise.resolve(false); }
+    pushing = true;
+    status("busy", "جارٍ المزامنة…");
+    var s = getState();
+    var chain = Promise.resolve();
+    KV_KEYS.forEach(function (k) {
+      chain = chain.then(function () {
+        var raw = ls.getItem(k);
+        if (raw === null) return;
+        var val; try { val = JSON.parse(raw); } catch (e) { val = raw; }
+        var h = hv(val);
+        if (s.k[k] === h) return;
+        return sb.from("kv").upsert({ key: k, value: val }).then(function (r) { if (r.error) throw r.error; s.k[k] = h; });
+      });
+    });
+    chain = chain.then(function () {
+      var list = []; try { list = JSON.parse(ls.getItem(VISITS) || "[]"); } catch (e) {}
+      var ids = {}, steps = Promise.resolve();
+      list.forEach(function (v) {
+        ids[v.id] = 1;
+        (v.photos || []).forEach(function (p, i) {
+          if (!p.src || p.src.indexOf("data:") !== 0 || p.path) return;
+          var ph = hash(p.src);
+          if (s.p[ph]) return;
+          steps = steps.then(function () {
+            var path = "visits/" + v.id + "/" + ph.replace(/\W/g, "") + ".jpg";
+            return dataUrlToBlob(p.src).then(function (b) {
+              return sb.storage.from("photos").upload(path, b, { contentType: b.type || "image/jpeg", upsert: true });
+            }).then(function (r) { if (r.error) throw r.error; s.p[ph] = path; });
+          });
+        });
+        steps = steps.then(function () {
+          var rv = remoteVisit(v, s), h = hv(rv);
+          if (s.v[v.id] === h) return;
+          return sb.from("visits").upsert({ id: v.id, data: rv, deleted: false }).then(function (r) { if (r.error) throw r.error; s.v[v.id] = h; });
+        });
+      });
+      Object.keys(s.v).forEach(function (id) {
+        if (ids[id]) return;
+        steps = steps.then(function () {
+          return sb.from("visits").update({ deleted: true }).eq("id", Number(id)).then(function (r) { if (r.error) throw r.error; delete s.v[id]; });
+        });
+      });
+      return steps;
+    });
+    current = chain.then(function () {
+      saveState(s);
+      status("ok", "متزامن مع السحابة");
+      return true;
+    }, function (err) {
+      saveState(s);
+      status("err", navigator.onLine ? "تعذّرت المزامنة • البيانات محفوظة على الجهاز" : "غير متصل • محفوظ على الجهاز");
+      try { console.warn("Wasl sync push failed", err); } catch (e) {}
+      return false;
+    }).then(function (ok) {
+      pushing = false;
+      if (again) { again = false; schedulePush(); }
+      return ok;
+    });
+    return current;
+  }
+  Cloud.flush = function () { clearTimeout(timer); return push(); };
+
+  function pull() {
+    if (!sb || !session) return Promise.resolve(false);
+    status("busy", "جارٍ جلب البيانات…");
+    var s = getState(), firstTime = !s.init;
+    return Promise.all([
+      sb.from("kv").select("key,value"),
+      sb.from("visits").select("id,data,deleted")
+    ]).then(function (res) {
+      if (res[0].error) throw res[0].error;
+      if (res[1].error) throw res[1].error;
+      var changed = false;
+      res[0].data.forEach(function (row) {
+        if (KV_KEYS.indexOf(row.key) === -1) return;
+        var h = hv(row.value), localVal = null;
+        try { localVal = JSON.parse(ls.getItem(row.key)); } catch (e) {}
+        if (localVal === null || hv(localVal) !== h) { rawSet.call(ls, row.key, JSON.stringify(row.value)); changed = true; }
+        s.k[row.key] = h;
+      });
+      var local = []; try { local = JSON.parse(ls.getItem(VISITS) || "[]"); } catch (e) {}
+      var byId = {};
+      local.forEach(function (v) { byId[v.id] = v; });
+      var remoteIds = {}, paths = [];
+      res[1].data.forEach(function (row) {
+        remoteIds[row.id] = 1;
+        if (row.deleted) {
+          if (byId[row.id]) { delete byId[row.id]; changed = true; }
+          delete s.v[row.id];
+          return;
+        }
+        var rv = row.data, h = hv(rv);
+        var mine = byId[row.id];
+        if (!mine || hv(remoteVisit(mine, s)) !== h) changed = true;
+        byId[row.id] = rv;
+        s.v[row.id] = h;
+        (rv.photos || []).forEach(function (p) { if (p.path) paths.push(p.path); });
+      });
+      /* a visit synced before but now missing on the server was removed there */
+      Object.keys(byId).forEach(function (id) {
+        if (!remoteIds[id] && s.v[id] && !firstTime) { delete byId[id]; delete s.v[id]; changed = true; }
+      });
+      var signing = paths.length ? sb.storage.from("photos").createSignedUrls(paths, SIGN_SECS) : Promise.resolve({ data: [] });
+      return signing.then(function (r) {
+        var url = {};
+        (r.data || []).forEach(function (x) { if (x && x.signedUrl) url[x.path] = x.signedUrl; });
+        var merged = Object.keys(byId).map(function (id) { return byId[id]; }).sort(function (a, b) { return (a.no || 0) - (b.no || 0) || a.id - b.id; });
+        merged.forEach(function (v) {
+          (v.photos || []).forEach(function (p) { if (p.path && url[p.path]) p.src = url[p.path]; });
+        });
+        rawSet.call(ls, VISITS, JSON.stringify(merged));
+        s.init = true;
+        saveState(s);
+        return changed;
+      });
+    });
+  }
+
+  function reloadOnce() {
+    var last = 0; try { last = Number(sessionStorage.getItem("wasl_reload") || 0); } catch (e) {}
+    if (Date.now() - last < 15000) return false;
+    try { sessionStorage.setItem("wasl_reload", String(Date.now())); } catch (e) {}
+    location.reload();
+    return true;
+  }
+  function syncNow() {
+    return pull().then(function (changed) {
+      if (changed && reloadOnce()) return;
+      push();
+    }, function (err) {
+      status("err", "تعذّر الاتصال بالسحابة • تعمل على نسخة الجهاز");
+      try { console.warn("Wasl sync pull failed", err); } catch (e) {}
+    });
+  }
+  Cloud.syncNow = syncNow;
+
+  Cloud.signIn = function (email, password, remember) {
+    if (!sb) return Promise.reject({ message: "offline" });
+    return sb.auth.signInWithPassword({ email: email, password: password }).then(function (r) {
+      if (r.error) throw r.error;
+      session = r.data.session;
+      try {
+        if (remember) rawRemove.call(ls, "wasl_ephemeral"); else rawSet.call(ls, "wasl_ephemeral", "1");
+        sessionStorage.setItem("wasl_alive", "1");
+      } catch (e) {}
+      return sb.rpc("is_team").then(function (t) {
+        if (t.error) throw t.error;
+        if (!t.data) {
+          return sb.auth.signOut().then(function () { session = null; throw { message: "not-team" }; });
+        }
+        try { sessionStorage.removeItem("wasl_reload"); } catch (e) {}
+        return syncNow();
+      });
+    });
+  };
+  Cloud.signOut = function () {
+    var done = function () {
+      [VISITS, STATE_KEY, "wasl_ephemeral"].concat(KV_KEYS).forEach(function (k) { try { rawRemove.call(ls, k); } catch (e) {} });
+      location.reload();
+    };
+    if (!sb) { done(); return; }
+    /* send anything not yet in the cloud before clearing this device */
+    (session ? push() : Promise.resolve(true)).then(function (ok) {
+      if (session && !ok && !confirm("فيه بيانات ما وصلت للسحابة بعد (تحقق من الإنترنت). لو سجلت الخروج الحين بتنمسح من هذا الجهاز. تسجل الخروج على أي حال؟")) return;
+      sb.auth.signOut().then(done, done);
+    });
+  };
+
+  if (!window.supabase || !window.supabase.createClient) {
+    status("off", "غير متصل • محفوظ على الجهاز");
+    return;
+  }
+  sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
+  Cloud.available = true;
+  sb.auth.onAuthStateChange(function (ev, s) { session = s; });
+  /* "remember me" off: end the session when the browser was closed */
+  var ephemeral = false, alive = false;
+  try { ephemeral = ls.getItem("wasl_ephemeral") === "1"; alive = sessionStorage.getItem("wasl_alive") === "1"; } catch (e) {}
+  sb.auth.getSession().then(function (r) {
+    session = r.data && r.data.session;
+    Cloud.ready = true;
+    if (session && ephemeral && !alive) { Cloud.signOut(); return; }
+    if (!session) {
+      document.documentElement.classList.remove("authed");
+      return;
+    }
+    document.documentElement.classList.add("authed");
+    syncNow();
+  });
+  window.addEventListener("online", function () { if (session) syncNow(); });
+  window.addEventListener("offline", function () { status("off", "غير متصل • محفوظ على الجهاز"); });
+})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@700;800;900&display=swap" rel="stylesheet">
@@ -1157,6 +1423,12 @@
   .hero-tx .q { display: inline-block; padding: 4px 14px; border-radius: 99px; background: rgba(255,255,255,.12); border: 1px solid rgba(227,199,122,.5); color: #f1dfa6; font-family: "Noto Naskh Arabic", serif; font-weight: 700; font-size: .95rem; }
   .hero-art { flex: none; width: 260px; height: 163px; margin: 0; }
   .top-gear.lo { margin-inline-start: 8px; }
+  .sync-badge { order: 0; margin-inline-start: 10px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 99px; font-size: .8rem; font-weight: 700; white-space: nowrap; border: 1px solid #d5ddd3; background: #fff; color: #33463e; max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
+  .sync-badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+  .sync-badge.ok { color: #167a52; border-color: #bfe0cd; background: #f1faf4; }
+  .sync-badge.busy { color: #8a6d12; border-color: #ead9a6; background: #fffaf0; }
+  .sync-badge.off, .sync-badge.err { color: #b3372f; border-color: #f0c9c5; background: #fff6f5; }
+  @media (max-width: 600px) { .sync-badge { font-size: 0; padding: 6px; gap: 0; } }
   /* one font across the program: Noto Naskh Arabic (the hadith font); reports keep Sakkal Majalla via .rp */
   body, body * { font-family: "Noto Naskh Arabic", "Traditional Arabic", "IBM Plex Sans Arabic", serif !important; }
   .sig-up { margin-top: 12px; padding: 10px 12px; border: 1px dashed #c9d4c6; border-radius: 12px; background: #fff; }
@@ -1240,11 +1512,11 @@
     <form class="lg-card" id="lgForm" autocomplete="on" novalidate>
       <div class="lg-org"><img id="lgLogo" alt="شعار الجمعية"><span id="lgOrg">الجمعية الخيرية لتحفيظ القرآن الكريم بجازان</span></div>
       <h2 class="t" id="lgTitle">تسجيل الدخول</h2>
-      <p class="s">أدخل اسم المستخدم وكلمة المرور للمتابعة.</p>
+      <p class="s">أدخل بريدك الإلكتروني وكلمة المرور للمتابعة.</p>
       <div class="lg-field">
-        <label for="lgUser">اسم المستخدم</label>
-        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></span>
-        <input id="lgUser" name="username" type="text" autocomplete="username" required>
+        <label for="lgUser">البريد الإلكتروني</label>
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg></span>
+        <input id="lgUser" name="email" type="email" dir="ltr" autocomplete="username" inputmode="email" required>
       </div>
       <div class="lg-field">
         <label for="lgPass">كلمة المرور</label>
@@ -1255,7 +1527,7 @@
       <div class="lg-row"><label><input type="checkbox" id="lgRemember" checked> تذكرني على هذا الجهاز</label></div>
       <button class="lg-btn" type="submit"><span>دخول</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h12"/></svg></button>
       <p class="lg-err" id="lgErr" role="alert"></p>
-      <div class="lg-foot">نظام وَصل · بياناتك محفوظة في هذا الجهاز فقط</div>
+      <div class="lg-foot">نظام وَصل · بياناتك محفوظة في السحابة ومتاحة لفريق الجمعية فقط</div>
     </form>
   </div>
 </div>
@@ -1270,6 +1542,7 @@
     </div>
     <div class="top-meta" aria-label="تاريخ اليوم"><span class="tm-k">اليوم</span><b id="todayWk"></b><small><span id="todayHj"></span> • <span id="todayGr"></span> م</small></div>
     <button class="top-gear" id="openSettings" type="button" title="الإعدادات" aria-label="الإعدادات" aria-haspopup="dialog"><span data-ic="gear"></span></button>
+    <span class="sync-badge" id="syncBadge" role="status" aria-live="polite" hidden></span>
     <button class="top-gear lo" id="logoutBtn" type="button" title="تسجيل الخروج" aria-label="تسجيل الخروج"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
   </div>
 </header>
@@ -4440,13 +4713,7 @@
   });
   $("tiBase").innerHTML = ICON_DB;
 
-  /* ---------- sign-in ---------- */
-  function rfHash(text) {
-    var bytes = new TextEncoder().encode(text);
-    return crypto.subtle.digest("SHA-256", bytes).then(function (buf) {
-      return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
-    });
-  }
+  /* ---------- sign-in (Supabase via window.WaslCloud) ---------- */
   $("lgLogo").src = logoSrc();
   $("lgOrg").textContent = org.name || DEFAULT_ORG;
   $("lgEye").addEventListener("click", function () {
@@ -4457,29 +4724,38 @@
   });
   $("lgForm").addEventListener("submit", function (ev) {
     ev.preventDefault();
-    var user = $("lgUser").value.replace(/\s+/g, " ").trim(), pass = $("lgPass").value;
-    var card = this;
+    var email = $("lgUser").value.trim(), pass = $("lgPass").value;
+    var card = this, btn = card.querySelector(".lg-btn");
     function fail(t) {
       $("lgErr").textContent = t;
+      btn.disabled = false;
       card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake");
     }
-    if (!user || !pass) { fail("أدخل اسم المستخدم وكلمة المرور."); return; }
-    if (!window.crypto || !crypto.subtle) { fail("افتح النظام من رابطه على الإنترنت لتسجيل الدخول."); return; }
-    rfHash("rafad|" + user + "|" + pass).then(function (h) {
-      if (h !== window.RF_AUTH) { fail("اسم المستخدم أو كلمة المرور غير صحيحة."); $("lgPass").select(); return; }
-      try { ($("lgRemember").checked ? localStorage : sessionStorage).setItem("rafad_auth_v1", h); } catch (e) {}
+    if (!email || !pass) { fail("أدخل البريد الإلكتروني وكلمة المرور."); return; }
+    var C = window.WaslCloud;
+    if (!C || !C.available) { fail("تعذّر الاتصال بالخادم. تأكد من الإنترنت ثم حدّث الصفحة."); return; }
+    btn.disabled = true;
+    $("lgErr").textContent = "جارٍ تسجيل الدخول…";
+    C.signIn(email, pass, $("lgRemember").checked).then(function () {
       $("lgErr").textContent = "";
       $("lgPass").value = "";
+      btn.disabled = false;
       document.documentElement.classList.add("authed");
       window.scrollTo(0, 0);
+    }, function (err) {
+      var m = (err && err.message) || "";
+      if (m === "not-team") fail("هذا الحساب غير مضاف لفريق الجمعية. تواصل مع مدير النظام.");
+      else if (/invalid login credentials/i.test(m)) { fail("البريد الإلكتروني أو كلمة المرور غير صحيحة."); $("lgPass").select(); }
+      else if (/email not confirmed/i.test(m)) fail("البريد غير مؤكد بعد. أكّد بريدك أو اطلب من المدير تأكيده.");
+      else if (/fetch|network|offline/i.test(m)) fail("تعذّر الاتصال بالخادم. تأكد من الإنترنت.");
+      else fail("تعذّر تسجيل الدخول: " + m);
     });
   });
   $("logoutBtn").addEventListener("click", function () {
-    try { localStorage.removeItem("rafad_auth_v1"); sessionStorage.removeItem("rafad_auth_v1"); } catch (e) {}
-    document.documentElement.classList.remove("authed");
-    $("lgUser").value = ""; $("lgPass").value = ""; $("lgErr").textContent = "";
-    $("lgUser").focus();
+    if (!confirm("تسجيل الخروج يمسح نسخة البيانات من هذا الجهاز (تبقى محفوظة في السحابة). تكمل؟")) return;
+    if (window.WaslCloud && window.WaslCloud.signOut) window.WaslCloud.signOut();
   });
+  if (window.WaslCloud && window.WaslCloud.refreshStatus) window.WaslCloud.refreshStatus();
   if (!document.documentElement.classList.contains("authed") && window.matchMedia("(min-width: 861px)").matches) $("lgUser").focus();
   $("tabBase").addEventListener("click", function () { switchTab("base"); });
 
@@ -5124,7 +5400,7 @@
     $("sigSupervisor").value = sg.supervisor || org.supervisor || "";
     $("sigDirector").value = sg.director || org.director || "";
     sigTouched = { sigTeacher: true, sigSupervisor: true, sigDirector: true };
-    pending = (v.photos || []).map(function (p) { return { src: p.src, cap: p.cap || "" }; });
+    pending = (v.photos || []).map(function (p) { return { src: p.src, cap: p.cap || "", path: p.path }; });
     renderPending();
     photoSay("");
     renderQuestions();
@@ -5176,7 +5452,7 @@
       qa: qa,
       notes: $("notes").value.trim(),
       sig: { teacher: (sigTouched.sigTeacher ? $("sigTeacher").value : $("teacher").value).trim(), supervisor: $("sigSupervisor").value.trim(), director: $("sigDirector").value.trim() },
-      photos: pending.map(function (p) { return { src: p.src, cap: p.cap.trim() }; })
+      photos: pending.map(function (p) { var o = { src: p.src, cap: p.cap.trim() }; if (p.path) o.path = p.path; return o; })
     };
     if (old) {
       v.edited = new Date().toISOString();
