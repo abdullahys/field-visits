@@ -1064,6 +1064,11 @@
   .hero-tx .q { display: inline-block; padding: 4px 14px; border-radius: 99px; background: rgba(255,255,255,.12); border: 1px solid rgba(227,199,122,.5); color: #f1dfa6; font-family: "Noto Naskh Arabic", serif; font-weight: 700; font-size: .95rem; }
   .hero-art { flex: none; width: 260px; height: 163px; margin: 0; }
   .top-gear.lo { margin-inline-start: 8px; }
+  .sigset { margin-top: 20px; }
+  .sig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 16px; }
+  .sig-grid label { margin-top: 8px; }
+  .sig-set { margin-top: 12px; }
+  @media (max-width: 700px) { .sig-grid { grid-template-columns: 1fr; } }
   .panel.editing { box-shadow: 0 0 0 3px #d3a22a, 0 16px 30px -20px rgba(0,0,0,.6); }
   .panel.editing #formTitle { color: #8a6d12; }
   @media (max-width: 700px) { .hero { padding: 18px; } .hero-art { display: none; } .hero-tx .k { font-size: 1.25rem; } }
@@ -1264,6 +1269,17 @@
         </div>
       </div>
 
+      <fieldset class="sigset">
+        <legend>أسماء التوقيعات في التقرير</legend>
+        <p class="hint-s" style="margin-top:6px">تظهر هذه الأسماء أسفل التقرير فوق خطوط التوقيع. تتعبّأ تلقائيًا من الإعدادات، وتقدر تغيّرها لهذه الزيارة فقط.</p>
+        <div class="sig-grid">
+          <div><label for="sigTeacher">معلم الحلقة</label><input id="sigTeacher" type="text" autocomplete="off" list="teacherList"></div>
+          <div><label for="sigSupervisor">الشؤون التعليمية بالجمعية</label><input id="sigSupervisor" type="text" autocomplete="off"></div>
+          <div><label for="sigDirector">المدير التنفيذي بالجمعية</label><input id="sigDirector" type="text" autocomplete="off"></div>
+        </div>
+        <button class="btn ghost sm sig-set" id="sigSettings" type="button">تغيير الأسماء الافتراضية من الإعدادات</button>
+      </fieldset>
+
       <div class="save-row">
         <button class="btn" id="save" type="button">حفظ الزيارة</button>
         <button class="btn ghost" id="editCancel" type="button" hidden>إلغاء التعديل</button>
@@ -1459,12 +1475,6 @@
             <label for="orgName" style="margin-top:0">اسم الجمعية</label>
             <input id="orgName" type="text" autocomplete="off">
             <p class="hint-s">يظهر الاسم في أعلى الصفحة وفي ترويسة التقرير المطبوع.</p>
-            <label for="orgDirector">اسم المدير التنفيذي بالجمعية</label>
-            <input id="orgDirector" type="text" autocomplete="off">
-            <p class="hint-s">يظهر أسفل التقرير على اليسار فوق خط التوقيع.</p>
-            <label for="orgSupervisor">الاسم في خانة الشؤون التعليمية بالجمعية</label>
-            <input id="orgSupervisor" type="text" autocomplete="off">
-            <p class="hint-s">يظهر أسفل التقرير في المنتصف. إذا تركته فاضيًا يظهر اسم الزائر.</p>
           </div>
           <div>
             <label style="margin-top:0">شعار الجمعية</label>
@@ -1475,6 +1485,23 @@
             </div>
             <p class="hint-s">الأفضل صورة PNG بخلفية شفافة أو بيضاء. تنحفظ في هذا المتصفح.</p>
             <p class="msg" id="orgMsg" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="set-card span2" id="sigCard">
+        <h3>أسماء التوقيعات في التقرير</h3>
+        <p class="hint-s" style="margin-top:0">الأسماء الافتراضية اللي تتعبّأ تلقائيًا في كل زيارة جديدة، وتقدر تغيّرها داخل الزيارة نفسها. اسم معلم الحلقة يتعبّأ من خانة «اسم المعلم» في كل زيارة.</p>
+        <div class="settings-body">
+          <div>
+            <label for="orgSupervisor">الشؤون التعليمية بالجمعية</label>
+            <input id="orgSupervisor" type="text" autocomplete="off" placeholder="مثل: اسم مشرف الشؤون التعليمية">
+            <p class="hint-s">يظهر أسفل التقرير في المنتصف. إذا تركته فاضيًا يظهر اسم الزائر.</p>
+          </div>
+          <div>
+            <label for="orgDirector">المدير التنفيذي بالجمعية</label>
+            <input id="orgDirector" type="text" autocomplete="off">
+            <p class="hint-s">يظهر أسفل التقرير على اليسار فوق خط التوقيع.</p>
           </div>
         </div>
       </section>
@@ -2242,10 +2269,12 @@
   $("orgSupervisor").addEventListener("input", function () {
     org.supervisor = this.value.trim();
     persistOrg();
+    if (typeof fillSig === "function") fillSig(false);
   });
   $("orgDirector").addEventListener("input", function () {
     org.director = this.value.trim();
     persistOrg();
+    if (typeof fillSig === "function") fillSig(false);
   });
 
   $("orgName").addEventListener("input", function () {
@@ -2596,7 +2625,8 @@
     r.appendChild(el("div", "rp-skip", "طريقة التقييم: يُقيَّم كل سؤال بأحد خمسة تقديرات، ويُحتسب تقدير كل معيار والتقدير العام من متوسط الإجابات حسب أوزان معايير الجمعية."));
 
     var sign = el("div", "rp-sign");
-    [["معلم الحلقة", v.teacher], ["الشؤون التعليمية بالجمعية", org.supervisor || v.visitor], ["المدير التنفيذي بالجمعية", org.director]].forEach(function (p) {
+    var sg = v.sig || {};
+    [["معلم الحلقة", sg.teacher || v.teacher], ["الشؤون التعليمية بالجمعية", sg.supervisor || org.supervisor || v.visitor], ["المدير التنفيذي بالجمعية", sg.director || org.director]].forEach(function (p) {
       var d = el("div");
       d.appendChild(el("b", "lb", p[0]));
       d.appendChild(el("i", "sl"));
@@ -4688,6 +4718,30 @@
     m.className = "msg " + (kind || "");
   }
 
+  /* ---------- signature names on the report ---------- */
+  var sigTouched = {};
+  function fillSig(reset) {
+    if (reset) sigTouched = {};
+    if (!sigTouched.sigTeacher) $("sigTeacher").value = $("teacher").value.trim();
+    if (!sigTouched.sigSupervisor) $("sigSupervisor").value = org.supervisor || "";
+    if (!sigTouched.sigDirector) $("sigDirector").value = org.director || "";
+  }
+  ["sigTeacher", "sigSupervisor", "sigDirector"].forEach(function (id) {
+    $(id).addEventListener("input", function () { sigTouched[id] = true; });
+  });
+  $("teacher").addEventListener("input", function () { fillSig(false); });
+  $("teacher").addEventListener("change", function () { fillSig(false); });
+  $("halqa").addEventListener("change", function () { setTimeout(function () { fillSig(false); }, 0); });
+  document.querySelector(".sigset").addEventListener("focusin", function () { fillSig(false); });
+  $("sigSettings").addEventListener("click", function () {
+    $("openSettings").click();
+    setTimeout(function () {
+      try { $("sigCard").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+      $("orgSupervisor").focus();
+    }, 50);
+  });
+  fillSig(true);
+
   /* ---------- editing a saved visit ---------- */
   var editId = null;
   function setEditMode(v) {
@@ -4705,6 +4759,7 @@
     renderPending();
     photoSay("");
     renderQuestions();
+    fillSig(true);
   }
   function startEdit(v) {
     closeList();
@@ -4727,6 +4782,11 @@
     var nt = v.notes || "";
     $("notes").value = nt;
     recAuto = !block ? "" : nt.indexOf(block) === 0 ? block : "\u0000";
+    var sg = v.sig || {};
+    $("sigTeacher").value = sg.teacher || v.teacher || "";
+    $("sigSupervisor").value = sg.supervisor || org.supervisor || "";
+    $("sigDirector").value = sg.director || org.director || "";
+    sigTouched = { sigTeacher: true, sigSupervisor: true, sigDirector: true };
     pending = (v.photos || []).map(function (p) { return { src: p.src, cap: p.cap || "" }; });
     renderPending();
     photoSay("");
@@ -4778,6 +4838,7 @@
       scores: scores,
       qa: qa,
       notes: $("notes").value.trim(),
+      sig: { teacher: (sigTouched.sigTeacher ? $("sigTeacher").value : $("teacher").value).trim(), supervisor: $("sigSupervisor").value.trim(), director: $("sigDirector").value.trim() },
       photos: pending.map(function (p) { return { src: p.src, cap: p.cap.trim() }; })
     };
     if (old) {
