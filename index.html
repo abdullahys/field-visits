@@ -1230,6 +1230,7 @@
         <div><label for="vtype">نوع الزيارة</label><select id="vtype"></select></div>
         <div><label for="date">تاريخ الزيارة</label><input id="date" type="date"></div>
         <div><label for="students">عدد الطلاب الحاضرين</label><input id="students" type="number" min="0" inputmode="numeric"></div>
+        <div><label for="injazi">عدد الطلاب في نظام إنجازي</label><input id="injazi" type="number" min="0" inputmode="numeric"></div>
       </div>
 
       <fieldset>
@@ -2106,6 +2107,11 @@
     try { return Number(n).toLocaleString("en-US", { maximumFractionDigits: 1 }); }
     catch (e) { return String(n); }
   }
+  function hasNum(x) { return x !== "" && x !== null && x !== undefined; }
+  function attendPct(v) {
+    if (!hasNum(v.students) || !hasNum(v.injazi) || !(v.injazi > 0)) return "-";
+    return num(Math.round(v.students / v.injazi * 100)) + "٪";
+  }
   function num(n) {
     try { return Number(n).toLocaleString("ar-SA", { maximumFractionDigits: 1 }); }
     catch (e) { return String(n); }
@@ -2260,6 +2266,11 @@
         s2.appendChild(el("b", "", num(v.students)));
         sc.appendChild(s2);
       }
+      if (hasNum(v.injazi)) {
+        var sI = el("span", "", "طلاب إنجازي: ");
+        sI.appendChild(el("b", "", num(v.injazi)));
+        sc.appendChild(sI);
+      }
       if (v.visitor) {
         var s3 = el("span", "", "الزائر: ");
         s3.appendChild(el("b", "", v.visitor));
@@ -2379,8 +2390,8 @@
     hero.appendChild(sc);
     r.appendChild(hero);
 
-    var info = el("div", "rp-info rp-info3");
-    [["المسجد", vMosque(v) || "-"], ["المكان", vArea(v) || "-"], ["اسم المعلم", v.teacher || "-"], ["نوع الزيارة", v.type || "-"], ["عدد الحضور", (v.students === "" || v.students == null) ? "-" : num(v.students)], ["الزائر", v.visitor || "-"]].forEach(function (p) {
+    var info = el("div", "rp-info");
+    [["المسجد", vMosque(v) || "-"], ["المكان", vArea(v) || "-"], ["اسم المعلم", v.teacher || "-"], ["نوع الزيارة", v.type || "-"], ["عدد الحضور", (v.students === "" || v.students == null) ? "-" : num(v.students)], ["عدد الطلاب في نظام إنجازي", hasNum(v.injazi) ? num(v.injazi) : "-"], ["نسبة الحضور", attendPct(v)], ["الزائر", v.visitor || "-"]].forEach(function (p) {
       var d = el("div");
       d.appendChild(el("small", "", p[0]));
       d.appendChild(el("b", "", p[1]));
@@ -2628,6 +2639,8 @@
     L.push("- نوع الزيارة: " + (v.type || "-"));
     L.push("- الزائر: " + (v.visitor || "-"));
     L.push("- عدد الحضور: " + ((v.students === "" || v.students == null) ? "-" : v.students));
+    L.push("- عدد الطلاب في نظام إنجازي: " + (hasNum(v.injazi) ? v.injazi : "-"));
+    L.push("- نسبة الحضور: " + attendPct(v));
     L.push("", "## التقييم", "");
     CRITERIA.forEach(function (c, i) {
       var p = critPct(v, i);
@@ -4587,6 +4600,7 @@
     var scores = scoresFrom(qa);
 
     var studentsRaw = $("students").value.trim();
+    var injaziRaw = $("injazi").value.trim();
     var v = {
       id: Date.now(),
       no: ++counter,
@@ -4596,6 +4610,7 @@
       area: $("area").value.trim(),
       date: date,
       students: studentsRaw === "" ? "" : Math.max(0, parseInt(studentsRaw, 10) || 0),
+      injazi: injaziRaw === "" ? "" : Math.max(0, parseInt(injaziRaw, 10) || 0),
       visitor: $("visitor").value.trim(),
       type: $("vtype").value,
       scores: scores,
@@ -4609,7 +4624,7 @@
     ensureHalqa(v.halqa, v.teacher, v.mosque, v.area, v.visitor);
     persistHal();
 
-    ["halqa", "mosque", "area", "teacher", "students", "notes"].forEach(function (id) { $(id).value = ""; });
+    ["halqa", "mosque", "area", "teacher", "students", "injazi", "notes"].forEach(function (id) { $(id).value = ""; });
     answers = {};
     pending = [];
     renderPending();
