@@ -2554,7 +2554,7 @@
     var table = el("table", "rp-detail");
     var thead = el("thead");
     var htr = el("tr");
-    ["معيار التقييم", "التقدير", "الدرجة", "المستوى"].forEach(function (t) { htr.appendChild(el("th", "", t)); });
+    ["معيار التقييم", "التقدير", "المستوى"].forEach(function (t) { htr.appendChild(el("th", "", t)); });
     thead.appendChild(htr);
     table.appendChild(thead);
     var tbody = el("tbody");
@@ -2574,7 +2574,6 @@
       gp.style.background = RT[gi].c;
       td2.appendChild(gp);
       tr.appendChild(td2);
-      tr.appendChild(el("td", "pt", fmtPts(v.scores[i], c.max)));
       var td3 = el("td", "barcell");
       td3.appendChild(levelDots(gi));
       tr.appendChild(td3);
@@ -2585,7 +2584,6 @@
         var qg = el("td", "qg", GRADE_NAMES[6 - q.a]);
         qg.style.color = RT[6 - q.a].c;
         qtr.appendChild(qg);
-        qtr.appendChild(el("td", ""));
         qtr.appendChild(el("td", ""));
         tbody.appendChild(qtr);
       });
@@ -2599,7 +2597,6 @@
     fgp.style.background = tn.c;
     ftd.appendChild(fgp);
     ftr.appendChild(ftd);
-    ftr.appendChild(el("td", "pt", fmtPts(tot, 100)));
     var ftd3 = el("td", "barcell");
     ftd3.appendChild(levelDots(st.g));
     ftr.appendChild(ftd3);
