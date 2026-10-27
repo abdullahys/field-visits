@@ -1064,6 +1064,8 @@
   .hero-tx .q { display: inline-block; padding: 4px 14px; border-radius: 99px; background: rgba(255,255,255,.12); border: 1px solid rgba(227,199,122,.5); color: #f1dfa6; font-family: "Noto Naskh Arabic", serif; font-weight: 700; font-size: .95rem; }
   .hero-art { flex: none; width: 260px; height: 163px; margin: 0; }
   .top-gear.lo { margin-inline-start: 8px; }
+  .panel.editing { box-shadow: 0 0 0 3px #d3a22a, 0 16px 30px -20px rgba(0,0,0,.6); }
+  .panel.editing #formTitle { color: #8a6d12; }
   @media (max-width: 700px) { .hero { padding: 18px; } .hero-art { display: none; } .hero-tx .k { font-size: 1.25rem; } }
 </style>
 </head>
@@ -1264,6 +1266,7 @@
 
       <div class="save-row">
         <button class="btn" id="save" type="button">حفظ الزيارة</button>
+        <button class="btn ghost" id="editCancel" type="button" hidden>إلغاء التعديل</button>
         <p class="msg" id="msg" role="status" aria-live="polite"></p>
       </div>
     </div>
@@ -2398,8 +2401,11 @@
         pr.addEventListener("click", function () { openReport(v); });
         var dl = iconBtn("btn ghost ib", ICON_SAVE, "تنزيل التقرير", "تنزيل تقرير " + v.halqa + " كملف");
         dl.addEventListener("click", function () { downloadReport(v); });
+        var ed = iconBtn("btn ghost ib", ICON_EDIT, "تعديل", "تعديل زيارة " + v.halqa);
+        ed.addEventListener("click", function () { startEdit(v); });
         var del = iconBtn("btn ghost ib danger", ICON_TRASH, "حذف", "حذف زيارة " + v.halqa);
         del.addEventListener("click", showConfirm);
+        foot.appendChild(ed);
         foot.appendChild(pr);
         foot.appendChild(dl);
         foot.appendChild(del);
@@ -4682,6 +4688,58 @@
     m.className = "msg " + (kind || "");
   }
 
+  /* ---------- editing a saved visit ---------- */
+  var editId = null;
+  function setEditMode(v) {
+    editId = v ? v.id : null;
+    $("formTitle").textContent = v ? "تعديل الزيارة • تقرير رقم " + fmtNo(v.no) : "تسجيل زيارة جديدة";
+    $("save").textContent = v ? "حفظ التعديلات" : "حفظ الزيارة";
+    $("editCancel").hidden = !v;
+    $("form").closest(".panel").classList.toggle("editing", !!v);
+  }
+  function resetForm() {
+    ["halqa", "mosque", "area", "teacher", "students", "injazi", "notes"].forEach(function (id) { $(id).value = ""; });
+    recAuto = "";
+    answers = {};
+    pending = [];
+    renderPending();
+    photoSay("");
+    renderQuestions();
+  }
+  function startEdit(v) {
+    closeList();
+    switchTab("visits");
+    setEditMode(v);
+    $("halqa").value = v.halqa || "";
+    $("mosque").value = vMosque(v) || "";
+    $("area").value = vArea(v) || "";
+    $("teacher").value = v.teacher || "";
+    $("students").value = hasNum(v.students) ? v.students : "";
+    $("injazi").value = hasNum(v.injazi) ? v.injazi : "";
+    $("date").value = v.date || today();
+    var vs = $("visitor");
+    if (v.visitor && !Array.prototype.some.call(vs.options, function (o) { return o.value === v.visitor; })) vs.appendChild(mkOpt(v.visitor, v.visitor));
+    vs.value = v.visitor || "";
+    if (v.type && VISIT_TYPES.indexOf(v.type) !== -1) $("vtype").value = v.type;
+    answers = {};
+    (v.qa || []).forEach(function (it) { if (it && it.id && it.a) answers[it.id] = it.a; });
+    var block = buildRecs(typeQuestions($("vtype").value));
+    var nt = v.notes || "";
+    $("notes").value = nt;
+    recAuto = !block ? "" : nt.indexOf(block) === 0 ? block : "\u0000";
+    pending = (v.photos || []).map(function (p) { return { src: p.src, cap: p.cap || "" }; });
+    renderPending();
+    photoSay("");
+    renderQuestions();
+    say("تعدّل الآن زيارة «" + v.halqa + "». غيّر ما تحتاج واضغط «حفظ التعديلات».", "ok");
+    try { $("formTitle").scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
+  }
+  $("editCancel").addEventListener("click", function () {
+    setEditMode(null);
+    resetForm();
+    say("تم إلغاء التعديل، وبقيت الزيارة كما كانت.", "ok");
+  });
+
   $("save").addEventListener("click", function () {
     var halqa = $("halqa").value.trim();
     var date = $("date").value;
@@ -4703,9 +4761,11 @@
 
     var studentsRaw = $("students").value.trim();
     var injaziRaw = $("injazi").value.trim();
+    var old = editId === null ? null : visits.filter(function (x) { return x.id === editId; })[0];
+    if (editId !== null && !old) { setEditMode(null); say("ما لقيت الزيارة الأصلية (يمكن انحذفت)، فبتنحفظ كزيارة جديدة. اضغط «حفظ الزيارة» مرة ثانية.", "err"); return; }
     var v = {
-      id: Date.now(),
-      no: ++counter,
+      id: old ? old.id : Date.now(),
+      no: old ? old.no : ++counter,
       halqa: halqa,
       teacher: $("teacher").value.trim(),
       mosque: $("mosque").value.trim(),
@@ -4720,21 +4780,21 @@
       notes: $("notes").value.trim(),
       photos: pending.map(function (p) { return { src: p.src, cap: p.cap.trim() }; })
     };
-    visits.push(v);
-    saveCounter();
+    if (old) {
+      v.edited = new Date().toISOString();
+      visits = visits.map(function (x) { return x.id === old.id ? v : x; });
+    } else {
+      visits.push(v);
+      saveCounter();
+    }
     var saved = persist();
     ensureHalqa(v.halqa, v.teacher, v.mosque, v.area, v.visitor);
     persistHal();
 
-    ["halqa", "mosque", "area", "teacher", "students", "injazi", "notes"].forEach(function (id) { $(id).value = ""; });
-    recAuto = "";
-    answers = {};
-    pending = [];
-    renderPending();
-    photoSay("");
-    renderQuestions();
+    setEditMode(null);
+    resetForm();
     renderAll();
-    say(saved ? "تم حفظ الزيارة." : "انحفظت الزيارة للجلسة الحالية فقط، المتصفح ما سمح بالتخزين (قد تكون الصور كبيرة، جرّب عددًا أقل).", saved ? "ok" : "err");
+    say(saved ? (old ? "تم حفظ التعديلات على الزيارة." : "تم حفظ الزيارة.") : "انحفظت الزيارة للجلسة الحالية فقط، المتصفح ما سمح بالتخزين (قد تكون الصور كبيرة، جرّب عددًا أقل).", saved ? "ok" : "err");
     $("halqa").focus();
   });
 
