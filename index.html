@@ -344,6 +344,14 @@
   .rp .rp-sign .sl img { position: absolute; left: 0; right: 0; bottom: -14px; display: block; width: 100%; height: 118px; object-fit: contain; object-position: center bottom; }
   .rp .rp-sign .sl img.sig-sup { left: 12%; right: 12%; width: 76%; height: 96px; bottom: -10px; }
   @media print { .rp .rp-sign .sl { height: 88px; } .rp .rp-sign .sl img { height: 110px; } .rp .rp-sign .sl img.sig-sup { height: 90px; } }
+  /* larger visit photos: up to three per row */
+  .rp .rp-pgrid.rp-pgrid-big { display: grid; gap: 10px; margin: 0 auto; }
+  .rp .rp-pgrid-big .rp-fig { flex: none; max-width: none; width: auto; padding: 4px; border-radius: 6px; }
+  .rp .rp-pgrid-big .rp-fig img { aspect-ratio: 4 / 3; border-radius: 4px; }
+  .rp .rp-pgrid-big .rp-fig figcaption { font-size: 10.5px; min-height: 24px; padding: 6px 2px 2px; gap: 6px; }
+  .rp .rp-pgrid-big .rp-fig figcaption b { width: 17px; height: 17px; font-size: 9.5px; }
+  .rp .rp-photos { break-inside: auto; }
+  .rp .rp-pgrid-big .rp-fig { break-inside: avoid; }
   .rp td.pt { white-space: nowrap; text-align: center; font-weight: 700; color: #33463e; width: 90px; }
   .rp tfoot td.pt { color: var(--c); font-size: 13px; }
   .rp-sub { color: #4a5a53; }
@@ -2748,7 +2756,10 @@
       var ph = el("div", "rp-photos");
       ph.appendChild(el("h2", "", "صور الزيارة (" + num(v.photos.length) + ")"));
       var n = v.photos.length;
-      var grid = el("div", "rp-pgrid");
+      var grid = el("div", "rp-pgrid rp-pgrid-big");
+      grid.style.gridTemplateColumns = "repeat(" + Math.min(n, 3) + ", minmax(0, 1fr))";
+      if (n === 1) grid.style.maxWidth = "60%";
+      if (n === 2) grid.style.maxWidth = "80%";
       v.photos.forEach(function (p, i) {
         var fig = el("figure", "rp-fig");
         var im = document.createElement("img");
