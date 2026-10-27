@@ -336,6 +336,8 @@
   .rp .rp-hero .rp-score .pts { margin-top: 2px; font-size: 13px; font-weight: 800; color: #fff; }
   .rp .rp-hero .rp-score .pbar { height: 6px; margin-top: 7px; border-radius: 3px; background: rgba(255,255,255,.3); overflow: hidden; }
   .rp .rp-hero .rp-score .pbar i { display: block; height: 100%; background: #fff; border-radius: 3px; }
+  .rp-sign .sl.has-sig { height: 56px; display: flex; align-items: flex-end; justify-content: center; }
+  .rp-sign .sl img { max-height: 54px; max-width: 90%; object-fit: contain; margin-bottom: -6px; }
   .rp td.pt { white-space: nowrap; text-align: center; font-weight: 700; color: #33463e; width: 90px; }
   .rp tfoot td.pt { color: var(--c); font-size: 13px; }
   .rp-sub { color: #4a5a53; }
@@ -1073,6 +1075,13 @@
   .hero-tx .q { display: inline-block; padding: 4px 14px; border-radius: 99px; background: rgba(255,255,255,.12); border: 1px solid rgba(227,199,122,.5); color: #f1dfa6; font-family: "Noto Naskh Arabic", serif; font-weight: 700; font-size: .95rem; }
   .hero-art { flex: none; width: 260px; height: 163px; margin: 0; }
   .top-gear.lo { margin-inline-start: 8px; }
+  .sig-up { margin-top: 12px; padding: 10px 12px; border: 1px dashed #c9d4c6; border-radius: 12px; background: #fff; }
+  .sig-up .sig-lbl { display: block; font-weight: 700; font-size: .88rem; color: #33463e; }
+  .sig-up .sig-prev { height: 74px; margin: 8px 0; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: repeating-linear-gradient(45deg, #f6f8f5 0 10px, #fff 10px 20px); }
+  .sig-up .sig-prev img { max-height: 66px; max-width: 100%; object-fit: contain; }
+  .sig-up .sig-prev span { color: #8a9790; font-size: .85rem; }
+  .sig-up .sig-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sig-up .sig-acts .btn { margin: 0; }
   .sigset { margin-top: 20px; }
   .sig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 16px; }
   .sig-grid label { margin-top: 8px; }
@@ -1506,13 +1515,31 @@
             <label for="orgSupervisor">الشؤون التعليمية بالجمعية</label>
             <input id="orgSupervisor" type="text" autocomplete="off" placeholder="مثل: اسم مشرف الشؤون التعليمية">
             <p class="hint-s">يظهر أسفل التقرير في المنتصف. إذا تركته فاضيًا يظهر اسم الزائر.</p>
+            <div class="sig-up" data-sig="sigImgSupervisor">
+              <span class="sig-lbl">توقيع الشؤون التعليمية</span>
+              <div class="sig-prev"></div>
+              <div class="sig-acts">
+                <label class="file-label"><input type="file" accept="image/*"><span class="btn ghost sm" style="display:inline-flex">رفع التوقيع</span></label>
+                <button class="btn ghost sm danger sig-rm" type="button">حذف التوقيع</button>
+              </div>
+            </div>
           </div>
           <div>
             <label for="orgDirector">المدير التنفيذي بالجمعية</label>
             <input id="orgDirector" type="text" autocomplete="off">
             <p class="hint-s">يظهر أسفل التقرير على اليسار فوق خط التوقيع.</p>
+            <div class="sig-up" data-sig="sigImgDirector">
+              <span class="sig-lbl">توقيع المدير التنفيذي</span>
+              <div class="sig-prev"></div>
+              <div class="sig-acts">
+                <label class="file-label"><input type="file" accept="image/*"><span class="btn ghost sm" style="display:inline-flex">رفع التوقيع</span></label>
+                <button class="btn ghost sm danger sig-rm" type="button">حذف التوقيع</button>
+              </div>
+            </div>
           </div>
         </div>
+        <p class="hint-s">صوّر التوقيع على ورقة بيضاء، أو استخدم صورة PNG بخلفية شفافة. الخلفية البيضاء تنشال تلقائيًا، والتوقيع يظهر في التقرير فوق خط التوقيع. التوقيع ينحفظ في هذا المتصفح فقط.</p>
+        <p class="msg" id="sigMsg" role="status" aria-live="polite"></p>
       </section>
 
       <section class="set-card">
@@ -1675,6 +1702,8 @@
         if (rawOrg && typeof o.director === "string" && o.director.trim()) org.director = o.director;
         if (rawOrg && typeof o.supervisor === "string") org.supervisor = o.supervisor;
         if (typeof o.logo === "string" && o.logo.indexOf("data:image/") === 0) org.logo = o.logo;
+        if (typeof o.sigImgSupervisor === "string" && o.sigImgSupervisor.indexOf("data:image/") === 0) org.sigImgSupervisor = o.sigImgSupervisor;
+        if (typeof o.sigImgDirector === "string" && o.sigImgDirector.indexOf("data:image/") === 0) org.sigImgDirector = o.sigImgDirector;
       }
     } catch (e) {}
   }
@@ -2325,6 +2354,71 @@
     reader.readAsDataURL(file);
   });
 
+  /* signature images for the report: resized, white background made transparent */
+  function sigSay(t, kind) { $("sigMsg").textContent = t; $("sigMsg").className = "msg " + (kind || ""); }
+  function renderSigUploads() {
+    Array.prototype.forEach.call(document.querySelectorAll(".sig-up"), function (box) {
+      var key = box.getAttribute("data-sig"), src = org[key] || "";
+      var prev = box.querySelector(".sig-prev");
+      prev.textContent = "";
+      if (src) { var im = document.createElement("img"); im.src = src; im.alt = box.querySelector(".sig-lbl").textContent; prev.appendChild(im); }
+      else prev.appendChild(el("span", "", "لا يوجد توقيع"));
+      box.querySelector(".sig-rm").hidden = !src;
+    });
+  }
+  function cleanSignature(img) {
+    var maxW = 520, maxH = 200;
+    var w = img.naturalWidth || maxW, h = img.naturalHeight || maxH;
+    var s = Math.min(1, maxW / w, maxH / h);
+    var c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(w * s));
+    c.height = Math.max(1, Math.round(h * s));
+    var ctx = c.getContext("2d");
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    try {
+      var d = ctx.getImageData(0, 0, c.width, c.height), px = d.data;
+      for (var i = 0; i < px.length; i += 4) {
+        var lum = (px[i] + px[i + 1] + px[i + 2]) / 3;
+        if (lum > 215) px[i + 3] = 0;
+        else if (lum > 170) px[i + 3] = Math.round(px[i + 3] * (215 - lum) / 45);
+      }
+      ctx.putImageData(d, 0, 0);
+    } catch (e) {}
+    return c.toDataURL("image/png");
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".sig-up"), function (box) {
+    var key = box.getAttribute("data-sig");
+    box.querySelector('input[type="file"]').addEventListener("change", function () {
+      var file = this.files && this.files[0];
+      this.value = "";
+      if (!file) return;
+      if (!/^image\//.test(file.type)) { sigSay("اختر ملف صورة (PNG أو JPG).", "err"); return; }
+      var reader = new FileReader();
+      reader.onerror = function () { sigSay("تعذرت قراءة الملف.", "err"); };
+      reader.onload = function () {
+        var img = new Image();
+        img.onerror = function () { sigSay("تعذر فتح الصورة، جرّب ملفًا ثانيًا.", "err"); };
+        img.onload = function () {
+          var data = reader.result;
+          try { data = cleanSignature(img); } catch (e) {}
+          org[key] = data;
+          var ok = persistOrg();
+          renderSigUploads();
+          sigSay(ok ? "تم حفظ التوقيع، وبيظهر في التقارير." : "ظهر التوقيع للجلسة الحالية فقط، المتصفح ما سمح بالتخزين.", ok ? "ok" : "err");
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    box.querySelector(".sig-rm").addEventListener("click", function () {
+      delete org[key];
+      persistOrg();
+      renderSigUploads();
+      sigSay("تم حذف التوقيع.", "ok");
+    });
+  });
+  renderSigUploads();
+
   $("rmLogo").addEventListener("click", function () {
     org.logo = "";
     persistOrg();
@@ -2632,10 +2726,17 @@
 
     var sign = el("div", "rp-sign");
     var sg = v.sig || {};
-    [["معلم الحلقة", sg.teacher || v.teacher], ["الشؤون التعليمية بالجمعية", sg.supervisor || org.supervisor || v.visitor], ["المدير التنفيذي بالجمعية", sg.director || org.director]].forEach(function (p) {
+    [["معلم الحلقة", sg.teacher || v.teacher, ""], ["الشؤون التعليمية بالجمعية", sg.supervisor || org.supervisor || v.visitor, org.sigImgSupervisor], ["المدير التنفيذي بالجمعية", sg.director || org.director, org.sigImgDirector]].forEach(function (p) {
       var d = el("div");
       d.appendChild(el("b", "lb", p[0]));
-      d.appendChild(el("i", "sl"));
+      var line = el("i", "sl");
+      if (p[2]) {
+        var sim = document.createElement("img");
+        sim.src = p[2]; sim.alt = "توقيع " + p[0];
+        line.appendChild(sim);
+        line.classList.add("has-sig");
+      }
+      d.appendChild(line);
       d.appendChild(el("span", "nm", p[1] || "\u00a0"));
       sign.appendChild(d);
     });
