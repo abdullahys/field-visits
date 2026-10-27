@@ -328,6 +328,7 @@
   .rp-title::after { content: ""; display: block; width: 90px; height: 3px; margin: 6px auto 0; background: #c79b2c; border-radius: 2px; }
   .rp-hero { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 14px 0; padding: 14px 18px; border-radius: 10px; background: var(--cbg); border-inline-start: 6px solid var(--c); }
   .rp-halqa { font-family: "Noto Naskh Arabic", "Traditional Arabic", serif; font-size: 24px; font-weight: 700; line-height: 1.4; }
+  .rp-halqa-k { color: #8a6d12; font-size: 12px; font-weight: 700; line-height: 1.3; }
   .rp-sub { color: #4a5a53; }
   .rp-score { text-align: center; min-width: 110px; }
   .rp-score b { display: block; font-size: 38px; line-height: 1.1; color: var(--c); font-weight: 700; }
@@ -1571,7 +1572,7 @@
   var COUNTER_KEY = "halaqat_counter_v1";
   var counter = 0;
   var visits = [];
-  var DEFAULT_DIRECTOR = "";
+  var DEFAULT_DIRECTOR = "عبدالله بن غالب نمازي";
   var DEFAULT_SUPERVISOR = "";
   var org = { name: DEFAULT_ORG, logo: "", director: DEFAULT_DIRECTOR, supervisor: DEFAULT_SUPERVISOR };
   var downloads = null;
@@ -1632,7 +1633,7 @@
       var o = JSON.parse(rawOrg || localStorage.getItem("halaqat_org_v2") || "null");
       if (o && typeof o === "object") {
         if (typeof o.name === "string") org.name = o.name;
-        if (rawOrg && typeof o.director === "string") org.director = o.director;
+        if (rawOrg && typeof o.director === "string" && o.director.trim()) org.director = o.director;
         if (rawOrg && typeof o.supervisor === "string") org.supervisor = o.supervisor;
         if (typeof o.logo === "string" && o.logo.indexOf("data:image/") === 0) org.logo = o.logo;
       }
@@ -2478,6 +2479,7 @@
 
     var hero = el("div", "rp-hero");
     var hl = el("div");
+    hl.appendChild(el("div", "rp-halqa-k", "حلقة"));
     hl.appendChild(el("div", "rp-halqa", v.halqa));
     var sub = [];
     if (vPlace(v)) sub.push(vPlace(v));
@@ -2491,7 +2493,7 @@
     r.appendChild(hero);
 
     var info = el("div", "rp-info");
-    [["المسجد", vMosque(v) || "-"], ["المكان", vArea(v) || "-"], ["اسم المعلم", v.teacher || "-"], ["نوع الزيارة", v.type || "-"], ["عدد الحضور", (v.students === "" || v.students == null) ? "-" : num(v.students)], ["عدد الطلاب في نظام إنجازي", hasNum(v.injazi) ? num(v.injazi) : "-"], ["نسبة الحضور", attendPct(v)], ["الزائر", v.visitor || "-"]].forEach(function (p) {
+    [["الجامع/ المسجد", vMosque(v) || "-"], ["المكان", vArea(v) || "-"], ["اسم المعلم", v.teacher || "-"], ["نوع الزيارة", v.type || "-"], ["عدد الحضور", (v.students === "" || v.students == null) ? "-" : num(v.students)], ["عدد الطلاب في نظام إنجازي", hasNum(v.injazi) ? num(v.injazi) : "-"], ["نسبة الحضور", attendPct(v)], ["الزائر", v.visitor || "-"]].forEach(function (p) {
       var d = el("div");
       d.appendChild(el("small", "", p[0]));
       d.appendChild(el("b", "", p[1]));
@@ -2733,7 +2735,7 @@
     L.push("- رقم التقرير: " + fmtNo(v.no));
     L.push("- تاريخ الزيارة: " + fmtDate(v.date));
     L.push("- اسم الحلقة: " + v.halqa);
-    L.push("- المسجد: " + (vMosque(v) || "-"));
+    L.push("- الجامع/ المسجد: " + (vMosque(v) || "-"));
     L.push("- المكان: " + (vArea(v) || "-"));
     L.push("- اسم المعلم: " + (v.teacher || "-"));
     L.push("- نوع الزيارة: " + (v.type || "-"));
