@@ -1246,7 +1246,9 @@
       <div class="npgrid">
         <div>
           <label for="notes" style="margin-top:0">الملاحظات والتوصيات</label>
+          <p class="hint-s" style="margin:0 0 6px">تُكتب التوصيات هنا تلقائيًا لكل سؤال تقديره أقل من ممتاز، مرتبة حسب المعايير. وتقدر تضيف ملاحظاتك تحتها.</p>
           <textarea id="notes"></textarea>
+          <p class="msg" id="recMsg" role="status" aria-live="polite"></p>
         </div>
         <div class="photos" style="margin-top:0">
           <div class="photos-head">
@@ -1740,6 +1742,103 @@
   ];
   var QBY = {};
   QBANK.forEach(function (q) { QBY[q.id] = q; });
+  /* recommendation written to the notes when a question is graded below ممتاز */
+  var REC = {
+    a1: "تسجيل جميع طلاب الحلقة في نظام إنجازي دون استثناء، ومتابعة المتأخرين في التسجيل.",
+    a2: "استكمال بيانات الطلاب في نظام إنجازي ومراجعتها والتأكد من دقتها.",
+    a3: "مراجعة توزيع الطلاب على الحلقات في النظام وتصحيح ما يلزم.",
+    a4: "تحديث سجلات الطلاب في نظام إنجازي بشكل دوري، أسبوعيًا على الأقل.",
+    b1: "إعداد خطة فردية مكتوبة لكل طالب تحدد مقدار الحفظ والمراجعة.",
+    b2: "مواءمة الخطة الفردية مع مستوى كل طالب وقدراته بعد تقييم مبدئي.",
+    b3: "تحديث الخطط الفردية دوريًا بحسب تقدم كل طالب.",
+    b4: "متابعة تنفيذ الخطة الفردية لكل طالب بانتظام وتوثيق ذلك.",
+    c1: "تكثيف التسميع والمتابعة لرفع مستوى حفظ الطلاب.",
+    c2: "تخصيص وقت للاستماع لتلاوة الطلاب وتصحيحها.",
+    c3: "تعزيز تطبيق أحكام التجويد عمليًا أثناء التلاوة والتسميع.",
+    c4: "تخصيص وقت ثابت للمراجعة وربطها بخطة واضحة لتثبيت المحفوظ.",
+    c5: "متابعة نسبة إنجاز الطلاب مقارنة بخططهم ومعالجة أسباب التأخر.",
+    d1: "متابعة التزام الطلاب بمواعيد الحضور والانصراف ومعالجة التأخر.",
+    d2: "ضبط الهدوء والنظام داخل الحلقة بقواعد واضحة يعرفها الطلاب.",
+    d3: "غرس قيمة احترام المعلم وتعزيز السلوك الإيجابي لدى الطلاب.",
+    d4: "توضيح تعليمات الحلقة للطلاب ومتابعة التزامهم بها.",
+    d5: "تنظيم وقت الحلقة وتوزيعه بين الحفظ والمراجعة لضمان حسن استثماره.",
+    e1: "الالتزام بوقت بداية الحلقة ونهايتها.",
+    e2: "تنظيم التسميع بجدول وترتيب واضح للطلاب.",
+    e3: "توزيع وقت الحلقة بعدل بين جميع الطلاب.",
+    e4: "تنويع أساليب التعليم والتحفيظ واستخدام الوسائل المساعدة.",
+    e5: "اتباع الأسلوب التربوي في التعامل مع الطلاب والتحفيز الإيجابي.",
+    f1: "رصد الحضور والغياب يوميًا في سجل الحلقة وفي نظام إنجازي.",
+    f2: "متابعة الطلاب المتغيبين والمتأخرين والتواصل مع أولياء أمورهم.",
+    f3: "توثيق أعذار الغياب وحفظها في سجل الحلقة.",
+    f4: "وضع إجراءات لمعالجة حالات الانقطاع ومتابعتها مع الإدارة.",
+    g1: "العناية بنظافة مكان الحلقة بشكل مستمر.",
+    g2: "توفير مكان مناسب لعدد الطلاب أو إعادة ترتيب الجلوس.",
+    g3: "توفير المصاحف والوسائل التعليمية اللازمة للحلقة.",
+    g4: "توفير عناصر السلامة في المكان والتأكد من صلاحيتها.",
+    h1: "تفعيل التواصل الدوري مع أولياء الأمور وإطلاعهم على مستوى أبنائهم.",
+    h2: "توثيق الملاحظات بشكل منظم في سجل الحلقة.",
+    h3: "متابعة تنفيذ التوصيات السابقة وتوثيق ما تم منها.",
+    h4: "وضع إجراءات واضحة للتحسين المستمر ومراجعتها دوريًا.",
+    x1: "التأكيد على حضور المعلم في الحلقة طوال وقتها.",
+    x2: "مطابقة عدد الحاضرين مع سجل التحضير وتحديثه أولًا بأول.",
+    x3: "توجيه الطلاب للانشغال بالحفظ والمراجعة طوال وقت الحلقة.",
+    y1: "تنفيذ توصيات الزيارة السابقة خلال مدة محددة.",
+    y2: "معالجة الملاحظات المسجلة سابقًا على الحلقة.",
+    y3: "وضع خطة علاجية لرفع مستوى الطلاب ومتابعتها حتى الزيارة القادمة.",
+    z1: "التفاعل مع التوجيهات المقدمة والعمل بها.",
+    z2: "تطبيق ما تلقّاه المعلم من توجيهات وتدريب سابق داخل الحلقة."
+  };
+  function recFor(q) {
+    if (REC[q.id]) return REC[q.id];
+    return "العمل على تحسين: " + String(q.t).replace(/^(هل|ما مدى|ما مستوى|ما)\s+/, "").replace(/[؟?]\s*$/, "") + ".";
+  }
+  function buildRecs(qs) {
+    var groups = {}, order = [];
+    qs.forEach(function (q) {
+      var a = answers[q.id];
+      if (!a || a >= 5) return;
+      if (!groups[q.c]) { groups[q.c] = []; order.push(q.c); }
+      groups[q.c].push({ q: q, a: a });
+    });
+    if (!order.length) return "";
+    order.sort(function (x, y) { return x - y; });
+    var lines = ["التوصيات:"], n = 0;
+    order.forEach(function (ci) {
+      lines.push("", "◆ " + CRITERIA[ci].name + ":");
+      groups[ci].sort(function (x, y) { return x.a - y.a; }).forEach(function (it) {
+        n++;
+        lines.push(numL(n) + ". " + recFor(it.q) + " (التقدير: " + GRADE_NAMES[6 - it.a] + ")");
+      });
+    });
+    return lines.join("\n");
+  }
+  var recAuto = "";
+  function syncRecs(force) {
+    var box = $("notes");
+    if (!box) return;
+    var txt = buildRecs(typeQuestions($("vtype").value));
+    var cur = box.value, rest;
+    if (!cur.trim() || !recAuto) rest = cur;
+    else if (cur.indexOf(recAuto) === 0) rest = cur.slice(recAuto.length);
+    else if (force) rest = "";
+    else {
+      $("recMsg").className = "msg";
+      $("recMsg").textContent = "";
+      $("recMsg").appendChild(document.createTextNode("عدّلت نص التوصيات يدويًا، فما راح تتحدث تلقائيًا. "));
+      var b = el("button", "bk-mini", "إعادة كتابة التوصيات من التقييم");
+      b.type = "button";
+      b.addEventListener("click", function () {
+        if (box.value.trim() && !confirm("بتنكتب التوصيات من جديد حسب التقييم، والنص الحالي بينحذف. تكمل؟")) return;
+        syncRecs(true);
+      });
+      $("recMsg").appendChild(b);
+      return;
+    }
+    rest = rest.replace(/^\s*\n/, "").replace(/^\n+/, "");
+    box.value = txt + (txt && rest ? "\n\n" : "") + rest;
+    recAuto = txt;
+    $("recMsg").textContent = "";
+  }
   var TYPE_Q = {
     "زيارة دورية": "all",
     "زيارة مفاجئة": ["x1", "x3", "d1", "d2", "d3", "d4", "d5", "e1", "e2", "e3", "e5", "x2", "f1", "f2", "g1", "g2", "g3", "g4"],
@@ -1818,6 +1917,7 @@
     $("total").textContent = items.length ? gradeName(tot) : "—";
     $("totalBox").className = "total" + (items.length ? " t" + gradeIdx(tot) : "");
     $("totalLabel").textContent = "• أُجيب على " + numL(items.length) + " من " + numL(qs.length) + " سؤال";
+    syncRecs();
   }
   function setRowState(row, q) {
     Array.prototype.forEach.call(row.querySelectorAll(".qopt"), function (b) {
@@ -4625,6 +4725,7 @@
     persistHal();
 
     ["halqa", "mosque", "area", "teacher", "students", "injazi", "notes"].forEach(function (id) { $(id).value = ""; });
+    recAuto = "";
     answers = {};
     pending = [];
     renderPending();
