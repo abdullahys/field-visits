@@ -340,8 +340,9 @@
   .rp .rp-sign { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
   .rp .rp-sign > div { display: flex; flex-direction: column; }
   .rp .rp-sign .sl { height: 96px; flex: none; display: flex; align-items: flex-end; justify-content: center; }
-  .rp .rp-sign .sl img { display: block; max-height: 92px; max-width: 96%; object-fit: contain; margin-bottom: -10px; }
-  @media print { .rp .rp-sign .sl { height: 88px; } .rp .rp-sign .sl img { max-height: 84px; } }
+  .rp .rp-sign .sl { position: relative; }
+  .rp .rp-sign .sl img { position: absolute; left: 0; right: 0; bottom: -14px; display: block; width: 100%; height: 118px; object-fit: contain; object-position: center bottom; }
+  @media print { .rp .rp-sign .sl { height: 88px; } .rp .rp-sign .sl img { height: 110px; } }
   .rp td.pt { white-space: nowrap; text-align: center; font-weight: 700; color: #33463e; width: 90px; }
   .rp tfoot td.pt { color: var(--c); font-size: 13px; }
   .rp-sub { color: #4a5a53; }
@@ -2388,8 +2389,42 @@
       }
       ctx.putImageData(d, 0, 0);
     } catch (e) {}
-    return c.toDataURL("image/png");
+    return trimCanvas(c).toDataURL("image/png");
   }
+  /* crop the transparent margin so the ink fills the space it is drawn in */
+  function trimCanvas(c) {
+    try {
+      var px = c.getContext("2d").getImageData(0, 0, c.width, c.height).data;
+      var x0 = c.width, y0 = c.height, x1 = -1, y1 = -1;
+      for (var y = 0; y < c.height; y++) for (var x = 0; x < c.width; x++) {
+        if (px[(y * c.width + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      }
+      if (x1 < 0) return c;
+      var pad = 4;
+      x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad);
+      x1 = Math.min(c.width - 1, x1 + pad); y1 = Math.min(c.height - 1, y1 + pad);
+      var out = document.createElement("canvas");
+      out.width = x1 - x0 + 1; out.height = y1 - y0 + 1;
+      out.getContext("2d").drawImage(c, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+      return out;
+    } catch (e) { return c; }
+  }
+  /* signatures saved before cropping existed: crop them once (called after load) */
+  function trimOldSigs() { ["sigImgSupervisor", "sigImgDirector"].forEach(function (key) {
+    if (!org[key] || org.sigTrim1) return;
+    var im = new Image();
+    im.onload = function () {
+      var c = document.createElement("canvas");
+      c.width = im.naturalWidth; c.height = im.naturalHeight;
+      c.getContext("2d").drawImage(im, 0, 0);
+      var t = trimCanvas(c);
+      if (t !== c) { org[key] = t.toDataURL("image/png"); }
+      org.sigTrim1 = true;
+      persistOrg();
+      renderSigUploads();
+    };
+    im.src = org[key];
+  }); }
   Array.prototype.forEach.call(document.querySelectorAll(".sig-up"), function (box) {
     var key = box.getAttribute("data-sig");
     box.querySelector('input[type="file"]').addEventListener("change", function () {
@@ -4986,6 +5021,11 @@
   $("orgName").value = org.name;
   $("orgDirector").value = org.director;
   $("orgSupervisor").value = org.supervisor;
+  renderSigUploads();
+  trimOldSigs();
+  fillSig(true);
+  $("lgLogo").src = logoSrc();
+  $("lgOrg").textContent = org.name || DEFAULT_ORG;
   renderBrand();
   renderAll();
 })();
