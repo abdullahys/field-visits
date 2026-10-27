@@ -342,7 +342,8 @@
   .rp .rp-sign .sl { height: 96px; flex: none; display: flex; align-items: flex-end; justify-content: center; }
   .rp .rp-sign .sl { position: relative; }
   .rp .rp-sign .sl img { position: absolute; left: 0; right: 0; bottom: -14px; display: block; width: 100%; height: 118px; object-fit: contain; object-position: center bottom; }
-  @media print { .rp .rp-sign .sl { height: 88px; } .rp .rp-sign .sl img { height: 110px; } }
+  .rp .rp-sign .sl img.sig-sup { left: 12%; right: 12%; width: 76%; height: 96px; bottom: -10px; }
+  @media print { .rp .rp-sign .sl { height: 88px; } .rp .rp-sign .sl img { height: 110px; } .rp .rp-sign .sl img.sig-sup { height: 90px; } }
   .rp td.pt { white-space: nowrap; text-align: center; font-weight: 700; color: #33463e; width: 90px; }
   .rp tfoot td.pt { color: var(--c); font-size: 13px; }
   .rp-sub { color: #4a5a53; }
@@ -2765,13 +2766,14 @@
 
     var sign = el("div", "rp-sign");
     var sg = v.sig || {};
-    [["معلم الحلقة", sg.teacher || v.teacher, ""], ["الشؤون التعليمية بالجمعية", sg.supervisor || org.supervisor || v.visitor, org.sigImgSupervisor], ["المدير التنفيذي بالجمعية", sg.director || org.director, org.sigImgDirector]].forEach(function (p) {
+    [["معلم الحلقة", sg.teacher || v.teacher, "", ""], ["الشؤون التعليمية بالجمعية", sg.supervisor || org.supervisor || v.visitor, org.sigImgSupervisor, "sig-sup"], ["المدير التنفيذي بالجمعية", sg.director || org.director, org.sigImgDirector, "sig-dir"]].forEach(function (p) {
       var d = el("div");
       d.appendChild(el("b", "lb", p[0]));
       var line = el("i", "sl");
       if (p[2]) {
         var sim = document.createElement("img");
         sim.src = p[2]; sim.alt = "توقيع " + p[0];
+        sim.className = p[3];
         line.appendChild(sim);
         line.classList.add("has-sig");
       }
