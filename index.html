@@ -910,6 +910,131 @@
   .dash:not(.dk-slate) .dk-titlebox { border-bottom-color: #0a4f2e; }
   .dk-sec { margin-top: 14px; }
 </style>
+<style id="dash2Css">
+  /* ===== dashboard v2 (لوحة المؤشرات) ===== */
+  .dash.dv, .dv-print .dash.dv { background: none !important; padding: 0; border-radius: 0; color: #18302a; display: grid; gap: 16px; container-type: inline-size; }
+  .dash-ctl { flex-wrap: wrap; gap: 8px; }
+  .dash-ctl select { width: auto; min-width: 140px; padding: 7px 10px; font-size: .88rem; }
+  .dv-hero { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 16px; color: #fff;
+    background: radial-gradient(circle at 12% 30%, rgba(255,231,163,.16), transparent 50%), linear-gradient(120deg, #0f6b3e, #0a4a2b); }
+  .dv-logo { width: 54px; height: 54px; flex: none; border-radius: 12px; background: #fff; padding: 4px; display: flex; align-items: center; justify-content: center; }
+  .dv-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .dv-org { font-size: .82rem; color: #f1dfa6; font-weight: 600; }
+  .dv-title { font-size: 1.25rem; font-weight: 700; line-height: 1.4; }
+  .dv-scope { font-size: .8rem; color: rgba(255,255,255,.8); }
+
+  .dv-kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+  .dv-kpi { --c: #0f6b3e; text-align: start; font: inherit; color: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 14px; background: #fff; border: 1px solid #e1e7df; border-top: 4px solid var(--c); box-shadow: 0 1px 2px rgba(16,40,30,.05), 0 8px 20px -16px rgba(16,40,30,.4); transition: transform .12s, box-shadow .12s; min-width: 0; }
+  .dv-kpi:hover { transform: translateY(-2px); box-shadow: 0 14px 26px -18px rgba(16,40,30,.55); }
+  .dv-kpi:focus-visible { outline: 3px solid #d3a22a; outline-offset: 2px; }
+  .tone-green { --c: #167a52; } .tone-gold { --c: #b0821a; } .tone-teal { --c: #1f8f8a; } .tone-blue { --c: #34509e; } .tone-red { --c: #b3372f; } .tone-orange { --c: #c4651e; }
+  .dv-kt { display: flex; align-items: center; gap: 8px; }
+  .dv-ki { width: 30px; height: 30px; flex: none; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; color: var(--c); background: color-mix(in srgb, var(--c) 12%, #fff); }
+  .dv-ki svg { width: 17px; height: 17px; }
+  .dv-kl { font-size: .84rem; font-weight: 600; color: #4a5a53; }
+  .dv-kv { font-size: 1.75rem; font-weight: 700; line-height: 1.15; color: #18302a; }
+  .dv-kv small { display: block; font-size: .72rem; font-weight: 500; color: #6a7a73; margin-top: 2px; }
+  .dv-km { height: 5px; border-radius: 3px; background: #edf1ec; overflow: hidden; }
+  .dv-km i { display: block; height: 100%; background: var(--c); border-radius: 3px; }
+  .dv-delta { font-size: .72rem; font-weight: 600; color: #6a7a73; }
+  .dv-delta.good { color: #167a52; } .dv-delta.bad { color: #b3372f; }
+
+  .dv-row { display: grid; gap: 16px; }
+  .dv-row.r21 { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); }
+  .dv-row.r11 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .dv-card { background: #fff; border: 1px solid #e1e7df; border-radius: 16px; padding: 16px 18px; box-shadow: 0 1px 2px rgba(16,40,30,.05), 0 8px 20px -16px rgba(16,40,30,.35); min-width: 0; }
+  .dv-ch { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 12px; }
+  .dv-ch h3 { margin: 0; font-size: 1rem; font-weight: 700; color: #0e5c37; border-inline-start: 4px solid #d3a22a; padding-inline-start: 8px; }
+  .dv-cs { font-size: .76rem; color: #6a7a73; }
+  .dv-empty { padding: 18px; text-align: center; color: #6a7a73; font-size: .9rem; }
+
+  .dv-svg { display: block; width: 100%; height: auto; }
+  .dv-grid { stroke: #e6ebe6; stroke-dasharray: 3 4; }
+  .dv-ax { font-size: 10px; fill: #7a8a83; font-family: inherit; }
+  .dv-bar { fill: #dfe9e2; }
+  .dv-bn { font-size: 9.5px; fill: #7a8a83; font-family: inherit; }
+  .dv-line { fill: none; stroke: #0f6b3e; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+  .dv-dot { stroke: #fff; stroke-width: 2; }
+  .dv-pv { font-size: 10.5px; font-weight: 700; fill: #18302a; font-family: inherit; }
+
+  .dv-donut { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; align-items: center; }
+  .dv-dsvg { width: 150px; height: 150px; }
+  .dv-dbg { fill: none; stroke: #eef2ee; stroke-width: 20; }
+  .dv-dseg { fill: none; stroke-width: 20; }
+  .dv-dn { font-size: 30px; font-weight: 700; fill: #18302a; font-family: inherit; }
+  .dv-dl { font-size: 12px; fill: #6a7a73; font-family: inherit; }
+  .dv-leg { display: grid; gap: 4px; }
+  .dv-li { display: grid; grid-template-columns: 12px 1fr auto 44px; align-items: center; gap: 8px; font: inherit; font-size: .86rem; color: inherit; background: none; border: 0; border-radius: 8px; padding: 5px 8px; cursor: pointer; text-align: start; }
+  .dv-li:hover { background: #f3f7f2; }
+  .dv-li i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+  .dv-li b { font-weight: 700; }
+  .dv-li small { color: #6a7a73; text-align: end; }
+
+  .dv-hb { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; padding: 6px 4px; border: 0; background: none; font: inherit; color: inherit; text-align: start; border-bottom: 1px dashed #edf1ec; }
+  .dv-hb:last-child { border-bottom: 0; }
+  .dv-hb.act { cursor: pointer; border-radius: 8px; }
+  .dv-hb.act:hover { background: #f3f7f2; }
+  .dv-hl { font-size: .86rem; font-weight: 600; line-height: 1.4; min-width: 0; }
+  .dv-hl small { display: block; font-size: .72rem; font-weight: 400; color: #6a7a73; }
+  .dv-ht { height: 9px; border-radius: 5px; background: #edf1ec; overflow: hidden; }
+  .dv-ht i { display: block; height: 100%; border-radius: 5px; }
+  .dv-hv { font-size: .8rem; font-weight: 700; white-space: nowrap; color: #33463e; }
+
+  .dv-sort { display: inline-flex; gap: 6px; margin-inline-start: auto; }
+  .dv-chip { font: inherit; font-size: .78rem; font-weight: 600; cursor: pointer; padding: 4px 12px; border-radius: 99px; border: 1px solid #d5ddd3; background: #fff; color: #33463e; }
+  .dv-chip.on { background: #0f6b3e; border-color: #0f6b3e; color: #fff; }
+  .dv-tw { overflow-x: auto; }
+  .dv-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+  .dv-table th { text-align: start; font-weight: 600; color: #fff; background: #0f6b3e; padding: 8px 10px; white-space: nowrap; }
+  .dv-table th:first-child { border-start-start-radius: 10px; } .dv-table th:last-child { border-start-end-radius: 10px; }
+  .dv-table td { padding: 7px 10px; border-bottom: 1px solid #edf1ec; vertical-align: middle; }
+  .dv-table tr.act { cursor: pointer; }
+  .dv-table tr.act:hover td { background: #f5f9f5; }
+  .dv-table tr.act:focus-visible td { background: #fff8e6; }
+  .dv-table td.n { color: #6a7a73; text-align: center; width: 36px; }
+  .dv-table td.hq { font-weight: 700; color: #0e5c37; white-space: nowrap; }
+  .dv-table td.sc { min-width: 190px; white-space: nowrap; }
+  .dv-sb { display: inline-block; vertical-align: middle; width: 70px; height: 7px; border-radius: 4px; background: #edf1ec; overflow: hidden; margin-inline-end: 8px; }
+  .dv-sb i { display: block; height: 100%; }
+  .dv-g { display: inline-block; padding: 1px 10px; border-radius: 99px; font-size: .76rem; font-weight: 700; color: #fff; background: var(--c); white-space: nowrap; }
+  .dv-table td.dl { font-weight: 700; white-space: nowrap; }
+  .dv-table td.dl.good { color: #167a52; } .dv-table td.dl.bad { color: #b3372f; } .dv-table td.dl.eq { color: #8a9790; font-weight: 500; }
+  .dv-link { font: inherit; font-size: .76rem; cursor: pointer; border: 1px solid #d5ddd3; background: #fff; color: #0f6b3e; border-radius: 8px; padding: 2px 10px; white-space: nowrap; }
+  .dv-link:hover { border-color: #0f6b3e; }
+  .dv-more { font: inherit; font-weight: 600; margin-top: 10px; cursor: pointer; border: 1px dashed #bfd3c6; background: #f7faf7; color: #0f6b3e; border-radius: 10px; padding: 8px; width: 100%; }
+
+  .dv-need { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+  .dv-nh { display: flex; flex-direction: column; gap: 2px; text-align: start; font: inherit; color: inherit; cursor: pointer; padding: 10px 12px; border-radius: 12px; background: #fffaf0; border: 1px solid #efdcae; border-inline-start: 4px solid #d3a22a; }
+  .dv-nh.never { background: #fff5f4; border-color: #f0c9c5; border-inline-start-color: #b3372f; }
+  .dv-nh:hover { filter: brightness(.98); }
+  .dv-nh b { font-size: .9rem; color: #18302a; }
+  .dv-nh span { font-size: .78rem; color: #6a5a2a; }
+  .dv-nh.never span { color: #8a2620; }
+  .dv-nh small { font-size: .72rem; color: #6a7a73; }
+  .dv-note { margin: 8px 0 0; font-size: .8rem; color: #6a7a73; }
+
+  @container (max-width: 1050px) { .dv-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @container (max-width: 820px) { .dv-row.r21, .dv-row.r11 { grid-template-columns: minmax(0, 1fr); } }
+  @container (max-width: 560px) {
+    .dv-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dv-donut { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+    .dv-kv { font-size: 1.4rem; }
+    .dv-hb { grid-template-columns: minmax(0, 1fr) auto; }
+    .dv-hb .dv-ht { grid-column: 1 / -1; grid-row: 2; }
+    .dv-table th:nth-child(3), .dv-table td:nth-child(3), .dv-table th:nth-child(4), .dv-table td:nth-child(4) { display: none; }
+    .dv-table td.sc { min-width: 150px; } .dv-sb { width: 44px; }
+  }
+
+  /* print (opened through «طباعة اللوحة») */
+  #report.dv-print { max-width: 1060px; margin: 0 auto; background: #fff; padding: 18px; border-radius: 4px; box-shadow: 0 8px 32px rgba(0,0,0,.35); font-family: "Readex Pro", "IBM Plex Sans Arabic", sans-serif; }
+  @media print {
+    @page dvland { size: A4 landscape; margin: 8mm; }
+    #report.dv-print { page: dvland; box-shadow: none; padding: 0; max-width: none; zoom: .78; }
+    .dv-print .dv-card, .dv-print .dv-kpi, .dv-print .dv-hero { break-inside: avoid; box-shadow: none; }
+    .dv-print .dv-kpi { transform: none; }
+    .dv-print, .dv-print * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
 <style id="posterCss">
   /* ===== Invitation-poster identity: ivory + deep green + gold ===== */
   html:root:root {
@@ -1579,13 +1704,13 @@
 <div class="wrap">
 
   <nav class="tabs" role="tablist" aria-label="أقسام الصفحة">
-    <button class="tab" id="tabBase" role="tab" type="button" aria-selected="false"><span class="ti" id="tiBase"></span><span>القاعدة الرئيسية</span></button>
-    <button class="tab" id="tabVisits" role="tab" type="button" aria-selected="true"><span class="ti" id="tiVisits"></span><span>الزيارات والتقييم</span></button>
+    <button class="tab" id="tabDash" role="tab" type="button" aria-selected="true"><span class="ti" id="tiDash"></span><span>الرئيسية</span></button>
+    <button class="tab" id="tabBase" role="tab" type="button" aria-selected="false"><span class="ti" id="tiBase"></span><span>قاعدة الحلقات</span></button>
+    <button class="tab" id="tabVisits" role="tab" type="button" aria-selected="false"><span class="ti" id="tiVisits"></span><span>نموذج الزيارة</span></button>
     <button class="tab" id="tabSchedule" role="tab" type="button" aria-selected="false"><span class="ti" id="tiSchedule"></span><span>جدول الزيارات</span><span class="tabbadge" id="tabBadge" hidden></span></button>
-    <button class="tab" id="tabDash" role="tab" type="button" aria-selected="false"><span class="ti" id="tiDash"></span><span>لوحة المؤشرات</span></button>
   </nav>
 
-  <div id="viewVisits">
+  <div id="viewVisits" hidden>
   <section class="hero" aria-label="ترحيب">
     <div class="hero-tx">
       <div class="k">أهلًا بك في نظام وَصل</div>
@@ -1693,12 +1818,15 @@
   </section>
   </div>
 
-  <div id="viewDash" hidden>
+  <div id="viewDash">
     <section class="panel" aria-labelledby="dashTitle">
       <div class="panel-head">
-        <h2 id="dashTitle">لوحة المؤشرات</h2>
+        <h2 id="dashTitle">الإحصاءات والمؤشرات</h2>
         <div class="head-acts dash-ctl">
-          <select id="dStyle" aria-label="نمط عرض اللوحة"><option value="light">نمط فاتح</option><option value="dark">نمط داكن (إحصائيات)</option></select>
+          <select id="dPeriod" aria-label="الفترة"></select>
+          <select id="dVisitor" aria-label="الزائر"></select>
+          <select id="dArea" aria-label="المكان"></select>
+          <button class="btn ghost sm" id="dReset" type="button" hidden>إلغاء التصفية</button>
           <button class="btn ghost ib tbl" id="dashPrint" type="button" title="عرض اللوحة وطباعتها"></button>
         </div>
       </div>
@@ -1709,7 +1837,7 @@
   <div id="viewBase" hidden>
     <section class="panel" aria-labelledby="baseTitle">
       <div class="panel-head">
-        <h2 id="baseTitle">القاعدة الرئيسية</h2>
+        <h2 id="baseTitle">قاعدة الحلقات</h2>
         <div class="head-acts">
           <button class="btn ghost ib" id="baseImpBtn" type="button" aria-expanded="false" aria-controls="baseImport"></button>
           <button class="btn ghost ib danger" id="baseClear" type="button">مسح القاعدة</button>
@@ -1972,10 +2100,8 @@
       </section>
 
       <section class="set-card">
-        <h3>اللوحة وبنك الأسئلة</h3>
-        <label for="setDstyle" style="margin-top:0">نمط لوحة المؤشرات</label>
-        <select id="setDstyle"><option value="light">نمط فاتح</option><option value="dark">نمط داكن (إحصائيات)</option></select>
-        <label>أسئلة الزيارات</label>
+        <h3>بنك الأسئلة</h3>
+        <label style="margin-top:0">أسئلة الزيارات</label>
         <button class="btn ghost ib" id="setOpenBank" type="button"><span class="ico" data-ic="qbank"></span><span>فتح بنك الأسئلة</span></button>
       </section>
 
@@ -3253,6 +3379,7 @@
   var FIT_CLASSES = ["rp-port", "rp-land", "ph-strip", "ph-under"];
   function resetFit() {
     var r = $("report");
+    r.className = "rp";
     $("mSeg").hidden = true;
     r.classList.remove.apply(r.classList, ["rp-one"].concat(FIT_CLASSES));
     r.style.removeProperty("--fit");
@@ -3464,7 +3591,7 @@
         document.body.appendChild(host);
         var H = Math.ceil(clone.getBoundingClientRect().height) + 24;
         document.body.removeChild(host);
-        var css = $("reportCss").textContent + "\n" + $("dashCss").textContent;
+        var css = $("reportCss").textContent + "\n" + $("dashCss").textContent + String.fromCharCode(10) + $("dash2Css").textContent;
         var xml = new XMLSerializer().serializeToString(clone);
         var svgText = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '"><foreignObject x="0" y="0" width="' + W + '" height="' + H + '"><div xmlns="http://www.w3.org/1999/xhtml" dir="rtl" style="background:#fff"><style>' + css + '</style>' + xml + '</div></foreignObject></svg>';
         var img = new Image();
@@ -3606,7 +3733,7 @@
   }
 
   function reportDocument(autoPrint) {
-    var css = $("reportCss").textContent + "\n" + $("dashCss").textContent;
+    var css = $("reportCss").textContent + "\n" + $("dashCss").textContent + String.fromCharCode(10) + $("dash2Css").textContent;
     return '<!DOCTYPE html>\n<html lang="ar" dir="rtl">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' +
       docTitle().replace(/</g, "") + '</title>\n' +
       '<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300..700&family=Noto+Naskh+Arabic:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Cairo:wght@700;800;900&display=swap" rel="stylesheet">\n<style>\n' +
@@ -4801,7 +4928,7 @@
   });
   $("baseClear").addEventListener("click", function () {
     if (!base.length) return;
-    if (!confirm("مسح كل حلقات القاعدة الرئيسية؟ جدول الزيارات والزيارات المسجلة ما تتأثر.")) return;
+    if (!confirm("مسح كل حلقات قاعدة الحلقات؟ جدول الزيارات والزيارات المسجلة ما تتأثر.")) return;
     base = []; baseSel = {};
     persistBase();
     renderBase();
@@ -4884,62 +5011,26 @@
     trend: svg('<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>')
   };
   var DK_COLORS = ["#6a8f89", "#6b7f6a", "#0e5c37"];
-  var dstyle = "light";
-  try { var ds = localStorage.getItem("halaqat_dstyle_v2"); if (ds === "dark" || ds === "light") dstyle = ds; } catch (e) {}
 
-  function periodStats(key) {
-    var vs = visits.filter(function (v) { return v.date && v.date.indexOf(key) === 0; });
-    var hal = {}, mos = {}, tea = {};
-    vs.forEach(function (v) {
-      hal[norm(v.halqa)] = 1;
-      var m = norm(vMosque(v)); if (m) mos[m] = 1;
-      var t = norm(v.teacher); if (t) tea[t] = 1;
-    });
-    var tot = vs.map(total);
-    var sum = tot.reduce(function (x, n) { return x + n; }, 0);
-    var tones = [0, 0, 0, 0, 0, 0];
-    tot.forEach(function (a) { tones[gradeIdx(a)]++; });
-    var crit = CRITERIA.map(function (c, i) {
-      var arr = vs.filter(function (v) { return v.scores[i] !== null && v.scores[i] !== undefined; });
-      if (!arr.length) return null;
-      return arr.reduce(function (x, v) { return x + v.scores[i]; }, 0) / arr.length / c.max * 100;
-    });
-    var months = [];
-    for (var mi = 1; mi <= 12; mi++) {
-      var pre = key + "-" + String(mi).padStart(2, "0");
-      months.push(vs.filter(function (v) { return v.date.indexOf(pre) === 0; }).length);
-    }
-    return {
-      months: months,
-      n: vs.length, halqat: Object.keys(hal).length, mosques: Object.keys(mos).length, teachers: Object.keys(tea).length,
-      avg: vs.length ? Math.round(sum / vs.length * 10) / 10 : null,
-      warn: tot.filter(function (a) { return status(a).k === "warn"; }).length,
-      tones: tones, crit: crit
-    };
-  }
-  function registryStats() {
-    var mos = {}, area = {}, tea = {};
-    halaqat.forEach(function (h) {
-      var m = norm(h.mosque); if (m) mos[m] = 1;
-      var a = norm(h.area); if (a) area[a] = 1;
-      var t = norm(h.teacher); if (t) tea[t] = 1;
-    });
-    return {
-      halaqat: halaqat.length, mosques: Object.keys(mos).length, areas: Object.keys(area).length, teachers: Object.keys(tea).length,
-      never: halaqat.filter(function (h) { return visitsOf(h).length === 0; }).length,
-      late: halaqat.filter(function (h) { var k = schInfo(h).k; return k === "over" || k === "today"; }).length
-    };
-  }
+  /* ---------- dashboard (لوحة المؤشرات) ----------
+     Every number comes from the saved visits, narrowed by the period / visitor / area filters.
+     Cards, chart parts and table rows open the matching visits, report or schedule. */
+  var dashF = { period: "y", visitor: "all", area: "all", sort: "low", all: false };
+  try {
+    var dfs = JSON.parse(localStorage.getItem("wasl_dash_v1") || "null");
+    if (dfs && /^(m|q|y|all)$/.test(dfs.period)) dashF.period = dfs.period;
+  } catch (e) {}
+  function saveDashF() { try { localStorage.setItem("wasl_dash_v1", JSON.stringify({ period: dashF.period })); } catch (e) {} }
 
-  function deltaChip(a, b, bad) {
-    if (a === null || b === null) return null;
-    var d = Math.round((b - a) * 10) / 10;
-    var cls = d === 0 ? "eq" : ((d > 0) !== !!bad ? "good" : "bad");
-    return el("div", "dk-delta " + cls, d === 0 ? "بدون تغيّر" : (d > 0 ? "▲ " : "▼ ") + num(Math.abs(d)));
-  }
   function openListWith(f) {
     $("q").value = "";
     $("filter").value = f;
+    renderList();
+    openList();
+  }
+  function openVisitsFor(name) {
+    $("q").value = name;
+    $("filter").value = "all";
     renderList();
     openList();
   }
@@ -4949,159 +5040,419 @@
     $("sv").value = "all";
     switchTab("schedule");
   }
-  function kpiCard(o) {
-    var c = el("div", "dk-tile tc-" + o.tone);
-    var ic = el("div", "dk-tico");
-    var sp = el("span");
-    sp.innerHTML = ICONS[o.icon] || "";
-    ic.appendChild(sp);
-    c.appendChild(ic);
-    c.appendChild(el("div", "dk-tlbl", o.label));
-    var nmEl = el("div", "dk-tnum", o.value);
-    if (o.word) nmEl.style.fontSize = "26px";
-    c.appendChild(nmEl);
-    c.appendChild(el("div", "dk-tsub", o.sub || "\u00a0"));
-    var more = el("button", "dk-tmore", "عرض التفاصيل");
-    more.type = "button";
-    if (o.act) more.addEventListener("click", o.act);
-    c.appendChild(more);
+
+  function dashRange(p) {
+    var t = today();
+    if (p === "m") return { from: t.slice(0, 8) + "01", to: t, label: "هذا الشهر" };
+    if (p === "q") return { from: addDays(t, -89), to: t, label: "آخر ٩٠ يومًا" };
+    if (p === "y") return { from: t.slice(0, 4) + "-01-01", to: t, label: "عام " + t.slice(0, 4) + "م" };
+    return { from: "0000-01-01", to: "9999-12-31", label: "كل الفترات" };
+  }
+  function prevRange(r) {
+    if (r.from === "0000-01-01") return null;
+    var len = daysBetween(r.from, r.to) + 1;
+    return { from: addDays(r.from, -len), to: addDays(r.from, -1) };
+  }
+  function inFilters(v) {
+    if (dashF.visitor !== "all" && (v.visitor || "") !== dashF.visitor) return false;
+    if (dashF.area !== "all" && areaKey(vArea(v)) !== dashF.area) return false;
+    return true;
+  }
+  function dashVisits(r) {
+    return visits.filter(function (v) { return v.date && v.date >= r.from && v.date <= r.to && inFilters(v); });
+  }
+  function dashHalaqat() {
+    return halaqat.filter(function (h) {
+      if (dashF.visitor !== "all" && (h.visitor || "") !== dashF.visitor) return false;
+      if (dashF.area !== "all" && areaKey(h.area) !== dashF.area) return false;
+      return true;
+    });
+  }
+  function avgOf(arr, fn) {
+    var xs = arr.map(fn).filter(function (x) { return x !== null && x !== undefined && !isNaN(x); });
+    return xs.length ? xs.reduce(function (a, b) { return a + b; }, 0) / xs.length : null;
+  }
+  function attendVal(v) { return hasNum(v.students) && hasNum(v.injazi) && v.injazi > 0 ? Math.min(150, v.students / v.injazi * 100) : null; }
+  function byDateDesc(a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : (b.no || 0) - (a.no || 0); }
+  function r1(x) { return Math.round(x * 10) / 10; }
+  function pctL(x) { return x === null ? "—" : num(Math.round(x)) + "٪"; }
+  function monthName(y, m) {
+    try { return new Date(y, m, 1).toLocaleDateString("ar-SA-u-ca-gregory", { month: "short" }); } catch (e) { return String(m + 1); }
+  }
+  function svgEl(tag, attrs, text) {
+    var n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.keys(attrs || {}).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+  function dvCard(cls, title, sub) {
+    var c = el("section", "dv-card " + (cls || ""));
+    if (title) {
+      var h = el("div", "dv-ch");
+      h.appendChild(el("h3", "", title));
+      if (sub) h.appendChild(el("span", "dv-cs", sub));
+      c.appendChild(h);
+    }
     return c;
   }
-  function periodGrid(S) {
-    var g = el("div", "dk-grid");
-    [
-      { k: "n", label: "الزيارات المنفذة", icon: "clip", tone: "slate", f: "all" },
-      { k: "halqat", label: "الحلقات المزارة", icon: "book", tone: "purple", f: "all" },
-      { k: "mosques", label: "المساجد المزارة", icon: "mosque", tone: "blue", f: "all" },
-      { k: "teachers", label: "المعلمون المقيَّمون", icon: "teacher", tone: "green", f: "all" },
-      { k: "avg", label: "متوسط التقدير", icon: "star", tone: "gold", f: "all" },
-      { k: "warn", label: "تحتاج متابعة", icon: "alert", tone: "red", f: "warn" }
-    ].forEach(function (d) {
-      g.appendChild(kpiCard({
-        icon: d.icon, tone: d.tone, label: d.label, sub: d.sub,
-        value: S[d.k] === null ? "—" : (d.k === "avg" ? gradeName(S.avg) : numL(S[d.k])), word: d.k === "avg",
-        act: function () { openListWith(d.f); }
-      }));
-    });
-    return g;
+  function dvEmpty(t) { return el("div", "dv-empty", t); }
+  function deltaEl(cur, prev, unit, invert) {
+    if (cur === null || prev === null || prev === undefined) return el("span", "dv-delta eq", "لا توجد فترة سابقة للمقارنة");
+    var d = r1(cur - prev);
+    if (d === 0) return el("span", "dv-delta eq", "بدون تغيّر عن الفترة السابقة");
+    var good = (d > 0) !== !!invert;
+    return el("span", "dv-delta " + (good ? "good" : "bad"), (d > 0 ? "▲ " : "▼ ") + num(Math.abs(d)) + (unit || "") + " عن الفترة السابقة");
   }
-  function stackedBar(S) {
-    var wrap = el("div", "dk-stack");
-    if (!S.n) { wrap.appendChild(el("span", "dk-none", "لا توجد زيارات")); return wrap; }
-    for (var t = 1; t <= 5; t++) {
-      if (!S.tones[t]) continue;
-      var seg = el("span", "dk-seg", num(S.tones[t]));
-      seg.style.width = (S.tones[t] / S.n * 100) + "%";
-      seg.style.background = RT[t].c;
-      wrap.appendChild(seg);
+
+  function dashSelect(id, opts, val) {
+    var s = $(id), cur = val;
+    s.textContent = "";
+    opts.forEach(function (o) { s.appendChild(mkOpt(o[0], o[1])); });
+    s.value = cur;
+    if (s.value !== cur) s.value = opts[0][0];
+  }
+  function fillDashFilters() {
+    dashSelect("dPeriod", [["m", "هذا الشهر"], ["q", "آخر ٩٠ يومًا"], ["y", "هذا العام"], ["all", "كل الفترات"]], dashF.period);
+    var vis = {};
+    VISITORS.forEach(function (n) { if (n) vis[n] = 1; });
+    visits.forEach(function (v) { if (v.visitor) vis[v.visitor] = 1; });
+    dashSelect("dVisitor", [["all", "كل الزائرين"]].concat(Object.keys(vis).sort().map(function (n) { return [n, n]; })), dashF.visitor);
+    var ar = {};
+    halaqat.forEach(function (h) { if (h.area) ar[areaKey(h.area)] = ar[areaKey(h.area)] || h.area; });
+    visits.forEach(function (v) { var a = vArea(v); if (a) ar[areaKey(a)] = ar[areaKey(a)] || a; });
+    dashSelect("dArea", [["all", "كل الأماكن"]].concat(Object.keys(ar).sort(function (a, b) { return ar[a].localeCompare(ar[b], "ar"); }).map(function (k) { return [k, ar[k]]; })), dashF.area);
+    dashF.visitor = $("dVisitor").value;
+    dashF.area = $("dArea").value;
+    $("dReset").hidden = dashF.visitor === "all" && dashF.area === "all";
+  }
+
+  /* ---- charts ---- */
+  function trendChart(endDate) {
+    var W = 640, H = 240, pl = 34, pr = 10, pt = 22, pb = 30;
+    var y = Number(endDate.slice(0, 4)), m = Number(endDate.slice(5, 7)) - 1;
+    var cols = [];
+    for (var k = 11; k >= 0; k--) {
+      var d = new Date(y, m - k, 1), key = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+      var vs = visits.filter(function (v) { return v.date && v.date.indexOf(key) === 0 && inFilters(v); });
+      cols.push({ key: key, label: monthName(d.getFullYear(), d.getMonth()), n: vs.length, avg: vs.length ? avgOf(vs, total) : null });
     }
+    var svg = svgEl("svg", { viewBox: "0 0 " + W + " " + H, class: "dv-svg", role: "img", "aria-label": "اتجاه متوسط الدرجة وعدد الزيارات لآخر ١٢ شهرًا", direction: "ltr" });
+    var ph = H - pt - pb, step = (W - pl - pr) / 12;
+    var yOf = function (s) { return pt + (1 - s / 100) * ph; };
+    [60, 70, 80, 90].forEach(function (g) {
+      svg.appendChild(svgEl("line", { x1: pl, x2: W - pr, y1: yOf(g), y2: yOf(g), class: "dv-grid" }));
+      svg.appendChild(svgEl("text", { x: pl - 6, y: yOf(g) + 4, class: "dv-ax", "text-anchor": "end" }, num(g)));
+    });
+    var maxN = Math.max.apply(null, cols.map(function (c) { return c.n; }).concat([1]));
+    cols.forEach(function (c, i) {
+      var cx = pl + step * i + step / 2;
+      if (c.n) {
+        var bh = c.n / maxN * ph * 0.42;
+        svg.appendChild(svgEl("rect", { x: cx - step * 0.28, y: pt + ph - bh, width: step * 0.56, height: bh, rx: 4, class: "dv-bar" }));
+        svg.appendChild(svgEl("text", { x: cx, y: pt + ph - bh - 4, class: "dv-bn", "text-anchor": "middle" }, num(c.n)));
+      }
+      svg.appendChild(svgEl("text", { x: cx, y: H - 10, class: "dv-ax", "text-anchor": "middle" }, c.label));
+    });
+    var pts = cols.map(function (c, i) { return c.avg === null ? null : [pl + step * i + step / 2, yOf(c.avg), c.avg]; }).filter(Boolean);
+    if (pts.length > 1) {
+      svg.appendChild(svgEl("polyline", { points: pts.map(function (p) { return p[0] + "," + p[1]; }).join(" "), class: "dv-line" }));
+    }
+    pts.forEach(function (p) {
+      svg.appendChild(svgEl("circle", { cx: p[0], cy: p[1], r: 4.5, class: "dv-dot", fill: RT[gradeIdx(p[2])].c }));
+      svg.appendChild(svgEl("text", { x: p[0], y: p[1] - 9, class: "dv-pv", "text-anchor": "middle" }, num(Math.round(p[2]))));
+    });
+    return svg;
+  }
+  function donut(vs) {
+    var counts = [0, 0, 0, 0, 0, 0];
+    vs.forEach(function (v) { counts[gradeIdx(total(v))]++; });
+    var wrap = el("div", "dv-donut");
+    var R = 62, C = 2 * Math.PI * R, off = 0;
+    var svg = svgEl("svg", { viewBox: "0 0 160 160", class: "dv-dsvg", role: "img", "aria-label": "توزيع التقديرات" });
+    svg.appendChild(svgEl("circle", { cx: 80, cy: 80, r: R, class: "dv-dbg" }));
+    for (var g = 1; g <= 5; g++) {
+      if (!counts[g]) continue;
+      var len = counts[g] / vs.length * C;
+      var seg = svgEl("circle", { cx: 80, cy: 80, r: R, class: "dv-dseg", stroke: RT[g].c, "stroke-dasharray": len + " " + (C - len), "stroke-dashoffset": -off, transform: "rotate(-90 80 80)" });
+      svg.appendChild(seg);
+      off += len;
+    }
+    svg.appendChild(svgEl("text", { x: 80, y: 78, class: "dv-dn", "text-anchor": "middle" }, num(vs.length)));
+    svg.appendChild(svgEl("text", { x: 80, y: 98, class: "dv-dl", "text-anchor": "middle" }, "زيارة"));
+    wrap.appendChild(svg);
+    var leg = el("div", "dv-leg");
+    for (var t = 1; t <= 5; t++) {
+      (function (t) {
+        var b = el("button", "dv-li");
+        b.type = "button";
+        b.style.setProperty("--c", RT[t].c);
+        b.appendChild(el("i"));
+        b.appendChild(el("span", "", GRADE_NAMES[t]));
+        b.appendChild(el("b", "", num(counts[t])));
+        b.appendChild(el("small", "", vs.length ? pctL(counts[t] / vs.length * 100) : "—"));
+        b.title = "عرض زيارات تقدير " + GRADE_NAMES[t];
+        b.addEventListener("click", function () { openListWith(String(t)); });
+        leg.appendChild(b);
+      })(t);
+    }
+    wrap.appendChild(leg);
     return wrap;
+  }
+  function hbar(label, pct, right, color, onClick, sub) {
+    var row = el(onClick ? "button" : "div", "dv-hb" + (onClick ? " act" : ""));
+    if (onClick) { row.type = "button"; row.addEventListener("click", onClick); }
+    var lb = el("span", "dv-hl", label);
+    if (sub) lb.appendChild(el("small", "", sub));
+    row.appendChild(lb);
+    var tr = el("span", "dv-ht");
+    var fill = el("i");
+    fill.style.width = Math.max(0, Math.min(100, pct || 0)) + "%";
+    fill.style.background = color;
+    tr.appendChild(fill);
+    row.appendChild(tr);
+    row.appendChild(el("b", "dv-hv", right));
+    return row;
   }
 
   function renderDash() {
-    var yr = today().slice(0, 4);
-    var S = periodStats(yr);
-    var R = registryStats();
+    fillDashFilters();
+    var r = dashRange(dashF.period), pr = prevRange(r);
+    var vs = dashVisits(r), pv = pr ? dashVisits(pr) : null;
+    var hs = dashHalaqat();
     var box = $("dash");
     box.textContent = "";
-    box.className = "dash" + (dstyle === "dark" ? " dk-slate" : "");
-    $("dStyle").value = dstyle;
+    box.className = "dash dv";
 
-    var head = el("div", "dk-head");
-    var tb = el("div", "dk-titlebox");
-    tb.appendChild(el("div", "dk-org", org.name || DEFAULT_ORG));
-    tb.appendChild(el("div", "dk-title", "إحصائيات عام " + yr + "م"));
-    head.appendChild(tb);
-    var lg = el("div", "dk-logo");
+    /* heading (also the print header) */
+    var hero = el("div", "dv-hero");
+    var lg = el("div", "dv-logo");
     var im = document.createElement("img");
     im.src = logoSrc(); im.alt = "";
     lg.appendChild(im);
-    head.appendChild(lg);
-    box.appendChild(head);
-
-    var body = el("div", "dk-body");
-    var main = el("div");
-    body.appendChild(main);
-    var side = el("div", "dk-side");
-    side.innerHTML = ICONS.trend;
-    body.appendChild(side);
-    box.appendChild(body);
-
-    main.appendChild(el("div", "dk-sec", "المسجّل في النظام"));
-    var rg = el("div", "dk-grid");
-    var lateF = (halaqat.filter(function (h) { return schInfo(h).k === "over"; }).length) ? "over" : "today";
-    [
-      ["الحلقات المسجلة", R.halaqat, "book", "purple", "all"], ["المساجد", R.mosques, "mosque", "blue", "all"], ["الأماكن", R.areas, "pin", "teal", "all"],
-      ["المعلمون", R.teachers, "teacher", "green", "all"], ["لم تُزَر بعد", R.never, "hourglass", "orange", "all"], ["متأخرة أو اليوم", R.late, "cal", "red", lateF]
-    ].forEach(function (d) {
-      rg.appendChild(kpiCard({ icon: d[2], tone: d[3], value: numL(d[1]), label: d[0], act: function () { goSchedule(d[4]); } }));
-    });
-    main.appendChild(rg);
-
-    main.appendChild(el("div", "dk-band", yr));
-    main.appendChild(periodGrid(S));
-
-    var charts = el("div", "dk-charts");
-    var c1 = el("div", "dk-chart");
-    c1.appendChild(el("div", "dk-ct", "توزيع التقييمات"));
-    var row = el("div", "dk-row");
-    row.appendChild(el("div", "dk-rl", num(S.n) + " زيارة"));
-    row.appendChild(stackedBar(S));
-    c1.appendChild(row);
-    var leg1 = el("div", "dk-leg");
-    [[1, "ممتاز"], [2, "جيد جدًا"], [3, "جيد"], [4, "مقبول"], [5, "ضعيف"]].forEach(function (l) {
-      var sp = el("span", "", l[1]);
-      sp.style.setProperty("--d", RT[l[0]].c);
-      leg1.appendChild(sp);
-    });
-    c1.appendChild(leg1);
-    charts.appendChild(c1);
-
-    var c2 = el("div", "dk-chart");
-    c2.appendChild(el("div", "dk-ct", "متوسط التقدير حسب المعيار"));
-    CRITERIA.forEach(function (c, i) {
-      var r2 = el("div", "dk-crow");
-      r2.appendChild(el("div", "nm", c.short));
-      var line = el("div", "dk-bar");
-      var tr = el("div", "tr");
-      var fill = el("i");
-      var val = S.crit[i];
-      fill.style.width = (val === null ? 0 : Math.min(100, val)) + "%";
-      fill.style.background = val === null ? "#c9cfcb" : RT[toneIdx(val / 100)].c;
-      tr.appendChild(fill);
-      line.appendChild(tr);
-      line.appendChild(el("b", "", val === null ? "—" : gradeName(val)));
-      r2.appendChild(line);
-      c2.appendChild(r2);
-    });
-    charts.appendChild(c2);
-    main.appendChild(charts);
-
-    var c3 = el("div", "dk-chart");
-    c3.style.marginTop = "14px";
-    c3.appendChild(el("div", "dk-ct", "الزيارات حسب الشهر"));
-    var months = el("div", "dk-months");
-    var mx = Math.max.apply(null, S.months.concat([1]));
-    S.months.forEach(function (n, i) {
-      var col = el("div", "dk-mcol");
-      col.appendChild(el("b", "", n ? num(n) : ""));
-      var bar = el("div", "dk-mbar");
-      bar.style.height = (n ? Math.max(6, n / mx * 90) : 2) + "px";
-      col.appendChild(bar);
-      var nm = "";
-      try { nm = new Date(Number(yr), i, 1).toLocaleDateString("ar-SA-u-ca-gregory", { month: "short" }); } catch (e) { nm = String(i + 1); }
-      col.appendChild(el("span", "", nm));
-      months.appendChild(col);
-    });
-    c3.appendChild(months);
-    main.appendChild(c3);
-
+    hero.appendChild(lg);
+    var ht = el("div", "dv-ht2");
+    ht.appendChild(el("div", "dv-org", org.name || DEFAULT_ORG));
+    ht.appendChild(el("div", "dv-title", "مؤشرات الزيارات الميدانية • " + r.label));
+    var scope = [];
+    if (dashF.visitor !== "all") scope.push("الزائر: " + dashF.visitor);
+    if (dashF.area !== "all") scope.push("المكان: " + $("dArea").options[$("dArea").selectedIndex].textContent);
     var issued = "";
     try { issued = new Date().toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" }); } catch (e) {}
-    var foot = el("div", "dk-foot");
-    foot.appendChild(el("span", "", "نظام وَصل لتقييم الزيارات الميدانية للحلقات"));
-    foot.appendChild(el("span", "", "صدرت بتاريخ " + issued));
-    box.appendChild(foot);
+    ht.appendChild(el("div", "dv-scope", (scope.length ? scope.join(" • ") + " • " : "") + "محدّثة " + issued));
+    hero.appendChild(ht);
+    box.appendChild(hero);
+
+    if (!visits.length) {
+      var em = dvCard("dv-wide");
+      em.appendChild(dvEmpty("ما فيه زيارات مسجلة للحين. سجّل أول زيارة وتظهر المؤشرات هنا تلقائيًا."));
+      var go = el("button", "btn sm", "تسجيل زيارة");
+      go.type = "button";
+      go.addEventListener("click", function () { switchTab("visits"); });
+      em.appendChild(go);
+      box.appendChild(em);
+      return;
+    }
+
+    /* KPI cards */
+    var avg = vs.length ? avgOf(vs, total) : null, pavg = pv && pv.length ? avgOf(pv, total) : null;
+    var att = avgOf(vs, attendVal), patt = pv ? avgOf(pv, attendVal) : null;
+    var latest = {};
+    vs.slice().sort(byDateDesc).forEach(function (v) { var k = norm(v.halqa); if (!latest[k]) latest[k] = v; });
+    var visitedKeys = Object.keys(latest);
+    var covered = hs.filter(function (h) { return latest[norm(h.name)]; }).length;
+    var cov = hs.length ? covered / hs.length * 100 : null;
+    var follow = visitedKeys.filter(function (k) { return gradeIdx(total(latest[k])) >= 4; });
+    var overdue = hs.filter(function (h) { return schInfo(h).k === "over"; });
+    var kp = el("div", "dv-kpis");
+    function kpi(o) {
+      var c = el("button", "dv-kpi tone-" + o.tone);
+      c.type = "button";
+      c.title = o.hint || "";
+      c.addEventListener("click", o.act);
+      var top = el("div", "dv-kt");
+      var ic = el("span", "dv-ki"); ic.innerHTML = ICONS[o.icon] || "";
+      top.appendChild(ic);
+      top.appendChild(el("span", "dv-kl", o.label));
+      c.appendChild(top);
+      var val = el("div", "dv-kv", o.value);
+      if (o.unit) val.appendChild(el("small", "", o.unit));
+      c.appendChild(val);
+      if (o.meter !== undefined) {
+        var mt = el("div", "dv-km"), mi = el("i");
+        mi.style.width = Math.max(0, Math.min(100, o.meter || 0)) + "%";
+        mt.appendChild(mi);
+        c.appendChild(mt);
+      }
+      c.appendChild(o.foot || el("span", "dv-delta eq", o.sub || " "));
+      kp.appendChild(c);
+    }
+    kpi({ icon: "clip", tone: "green", label: "الزيارات", value: num(vs.length), unit: "زيارة", foot: pv ? deltaEl(vs.length, pv.length, " زيارة") : null, sub: "في " + r.label, hint: "عرض الزيارات المسجلة", act: function () { openListWith("all"); } });
+    kpi({ icon: "star", tone: "gold", label: "متوسط الدرجة", value: avg === null ? "—" : num(r1(avg)), unit: avg === null ? "" : "من ١٠٠ • " + gradeName(avg), meter: avg === null ? 0 : avg, foot: deltaEl(avg, pavg, " درجة"), hint: "عرض الزيارات", act: function () { openListWith("all"); } });
+    kpi({ icon: "book", tone: "teal", label: "تغطية الحلقات", value: cov === null ? "—" : num(Math.round(cov)) + "٪", unit: hs.length ? num(covered) + " من " + num(hs.length) + " حلقة" : "أضف الحلقات للجدول", meter: cov || 0, sub: "حلقات زُرت في الفترة", hint: "فتح جدول الزيارات", act: function () { goSchedule("all"); } });
+    kpi({ icon: "people", tone: "blue", label: "متوسط الحضور", value: att === null ? "—" : num(Math.round(att)) + "٪", unit: "من طلاب إنجازي", meter: att || 0, foot: deltaEl(att, patt, "٪"), hint: "نسبة الحاضرين إلى المسجلين في إنجازي", act: function () { openListWith("all"); } });
+    kpi({ icon: "alert", tone: "red", label: "تحتاج متابعة", value: num(follow.length), unit: "حلقة", sub: "آخر تقدير لها مقبول أو ضعيف", hint: "عرض الزيارات التي تحتاج متابعة", act: function () { openListWith("warn"); } });
+    kpi({ icon: "hourglass", tone: "orange", label: "زيارات متأخرة", value: num(overdue.length), unit: "حلقة", sub: "تجاوزت موعدها في الجدول", hint: "فتح الزيارات المتأخرة في الجدول", act: function () { goSchedule("over"); } });
+    box.appendChild(kp);
+
+    /* trend + distribution */
+    var row1 = el("div", "dv-row r21");
+    var ct = dvCard("", "اتجاه الأداء", "متوسط الدرجة (الخط) وعدد الزيارات (الأعمدة) لآخر ١٢ شهرًا");
+    ct.appendChild(trendChart(r.to === "9999-12-31" ? today() : r.to));
+    row1.appendChild(ct);
+    var cd = dvCard("", "توزيع التقديرات", "اضغط على التقدير لعرض زياراته");
+    cd.appendChild(vs.length ? donut(vs) : dvEmpty("لا توجد زيارات في هذه الفترة."));
+    row1.appendChild(cd);
+    box.appendChild(row1);
+
+    /* criteria + weakest questions */
+    var row2 = el("div", "dv-row r11");
+    var cc = dvCard("", "الأداء حسب المعيار", "من الأضعف إلى الأقوى");
+    var crit = CRITERIA.map(function (c, i) {
+      var arr = vs.filter(function (v) { return v.scores && v.scores[i] !== null && v.scores[i] !== undefined; });
+      return { i: i, name: c.name, pct: arr.length ? arr.reduce(function (x, v) { return x + v.scores[i]; }, 0) / arr.length / c.max * 100 : null };
+    }).filter(function (c) { return c.pct !== null; }).sort(function (a, b) { return a.pct - b.pct; });
+    if (!crit.length) cc.appendChild(dvEmpty("لا توجد بيانات في هذه الفترة."));
+    crit.forEach(function (c) { cc.appendChild(hbar(c.name, c.pct, num(Math.round(c.pct)) + "٪ • " + gradeName(c.pct), RT[gradeIdx(c.pct)].c)); });
+    row2.appendChild(cc);
+    var cq = dvCard("", "أكثر الأسئلة احتياجًا للتحسين", "متوسط تقديرات كل سؤال في الفترة");
+    var qm = {};
+    vs.forEach(function (v) {
+      (v.qa || []).forEach(function (q) {
+        if (!q.a) return;
+        var k = q.t;
+        qm[k] = qm[k] || { t: q.t, c: q.c, s: 0, n: 0 };
+        qm[k].s += POINTS[q.a]; qm[k].n++;
+      });
+    });
+    var qs = Object.keys(qm).map(function (k) { var o = qm[k]; o.avg = o.s / o.n; return o; }).filter(function (o) { return o.avg < 100; }).sort(function (a, b) { return a.avg - b.avg || b.n - a.n; }).slice(0, 7);
+    if (!qs.length) cq.appendChild(dvEmpty(vs.length ? "كل الأسئلة تقديرها ممتاز في هذه الفترة 🎉" : "لا توجد بيانات في هذه الفترة."));
+    qs.forEach(function (o) { cq.appendChild(hbar(o.t, o.avg, gradeName(o.avg), RT[gradeIdx(o.avg)].c, null, CRITERIA[o.c] ? CRITERIA[o.c].short + " • " + num(o.n) + " زيارة" : "")); });
+    row2.appendChild(cq);
+    box.appendChild(row2);
+
+    /* halaqat ranking */
+    var ch = dvCard("dv-wide", "ترتيب الحلقات", "آخر تقدير لكل حلقة في الفترة، والتغيّر عن زيارتها السابقة • اضغط على الحلقة لفتح تقريرها");
+    var sortBar = el("div", "dv-sort");
+    [["low", "الأضعف أولًا"], ["high", "الأفضل أولًا"], ["recent", "الأحدث زيارة"]].forEach(function (s) {
+      var b = el("button", "dv-chip" + (dashF.sort === s[0] ? " on" : ""), s[1]);
+      b.type = "button";
+      b.addEventListener("click", function () { dashF.sort = s[0]; renderDash(); });
+      sortBar.appendChild(b);
+    });
+    ch.querySelector(".dv-ch").appendChild(sortBar);
+    var rows = visitedKeys.map(function (k) {
+      var v = latest[k];
+      var older = visits.filter(function (x) { return norm(x.halqa) === k && byDateDesc(x, v) > 0; }).sort(byDateDesc)[0] || null;
+      return { v: v, score: total(v), prev: older ? total(older) : null, count: vs.filter(function (x) { return norm(x.halqa) === k; }).length };
+    });
+    rows.sort(function (a, b) {
+      if (dashF.sort === "high") return b.score - a.score;
+      if (dashF.sort === "recent") return byDateDesc(a.v, b.v);
+      return a.score - b.score;
+    });
+    if (!rows.length) ch.appendChild(dvEmpty("لا توجد زيارات في هذه الفترة."));
+    else {
+      var tw = el("div", "dv-tw");
+      var tb = el("table", "dv-table");
+      var thr = el("tr");
+      ["#", "الحلقة", "المكان", "المعلم", "آخر زيارة", "الدرجة", "التغيّر", "الزيارات", ""].forEach(function (t) { thr.appendChild(el("th", "", t)); });
+      var thd = el("thead"); thd.appendChild(thr); tb.appendChild(thd);
+      var tbd = el("tbody");
+      (dashF.all ? rows : rows.slice(0, 10)).forEach(function (o, i) {
+        var tr = el("tr", "act");
+        tr.tabIndex = 0;
+        tr.title = "فتح تقرير " + o.v.halqa;
+        var open = function () { openReport(o.v); };
+        tr.addEventListener("click", open);
+        tr.addEventListener("keydown", function (e) { if (e.key === "Enter") open(); });
+        tr.appendChild(el("td", "n", num(i + 1)));
+        tr.appendChild(el("td", "hq", o.v.halqa));
+        tr.appendChild(el("td", "", vArea(o.v) || "—"));
+        tr.appendChild(el("td", "", o.v.teacher || "—"));
+        tr.appendChild(el("td", "", fmtDate(o.v.date)));
+        var sc = el("td", "sc");
+        var g = gradeIdx(o.score);
+        var bar = el("span", "dv-sb"), bi = el("i");
+        bi.style.width = Math.min(100, o.score) + "%"; bi.style.background = RT[g].c;
+        bar.appendChild(bi);
+        sc.appendChild(bar);
+        var chip = el("span", "dv-g", num(r1(o.score)) + " • " + GRADE_NAMES[g]);
+        chip.style.setProperty("--c", RT[g].c);
+        sc.appendChild(chip);
+        tr.appendChild(sc);
+        var dlt = o.prev === null ? null : r1(o.score - o.prev);
+        tr.appendChild(el("td", "dl " + (dlt === null ? "eq" : dlt > 0 ? "good" : dlt < 0 ? "bad" : "eq"), dlt === null ? "أول زيارة" : dlt === 0 ? "—" : (dlt > 0 ? "▲ " : "▼ ") + num(Math.abs(dlt))));
+        tr.appendChild(el("td", "n", num(o.count)));
+        var lk = el("td", "lk");
+        var all = el("button", "dv-link", "كل زياراتها");
+        all.type = "button";
+        all.addEventListener("click", function (e) { e.stopPropagation(); openVisitsFor(o.v.halqa); });
+        lk.appendChild(all);
+        tr.appendChild(lk);
+        tbd.appendChild(tr);
+      });
+      tb.appendChild(tbd);
+      tw.appendChild(tb);
+      ch.appendChild(tw);
+      if (rows.length > 10) {
+        var more = el("button", "dv-more", dashF.all ? "عرض أول ١٠ فقط" : "عرض كل الحلقات (" + num(rows.length) + ")");
+        more.type = "button";
+        more.addEventListener("click", function () { dashF.all = !dashF.all; renderDash(); });
+        ch.appendChild(more);
+      }
+    }
+    box.appendChild(ch);
+
+    /* by area + by visitor */
+    var row3 = el("div", "dv-row r11");
+    function groupCard(title, sub, keyFn, labelFn, onPick) {
+      var c = dvCard("", title, sub);
+      var g = {};
+      vs.forEach(function (v) {
+        var k = keyFn(v);
+        if (!k) return;
+        g[k] = g[k] || { k: k, label: labelFn(v), list: [] };
+        g[k].list.push(v);
+      });
+      var arr = Object.keys(g).map(function (k) { var o = g[k]; o.avg = avgOf(o.list, total); return o; }).sort(function (a, b) { return b.list.length - a.list.length || a.avg - b.avg; });
+      if (!arr.length) c.appendChild(dvEmpty("لا توجد بيانات في هذه الفترة."));
+      arr.slice(0, 8).forEach(function (o) {
+        c.appendChild(hbar(o.label, o.avg, num(Math.round(o.avg)) + " • " + gradeName(o.avg), RT[gradeIdx(o.avg)].c, function () { onPick(o.k); }, num(o.list.length) + " زيارة"));
+      });
+      return c;
+    }
+    row3.appendChild(groupCard("حسب المكان", "متوسط الدرجة وعدد الزيارات • اضغط للتصفية", function (v) { return vArea(v) ? areaKey(vArea(v)) : ""; }, function (v) { return vArea(v); }, function (k) { dashF.area = k; renderDash(); }));
+    row3.appendChild(groupCard("حسب الزائر", "نشاط كل زائر ومتوسط تقييماته • اضغط للتصفية", function (v) { return v.visitor || ""; }, function (v) { return v.visitor; }, function (k) { dashF.visitor = k; renderDash(); }));
+    box.appendChild(row3);
+
+    /* halaqat that need a visit */
+    var cn = dvCard("dv-wide", "حلقات تحتاج زيارة", "لم تُزَر أبدًا أو مضى على آخر زيارة لها أكثر من ٣٠ يومًا • اضغط لفتح الجدول");
+    var t = today();
+    var need = hs.map(function (h) {
+      var last = visitsOf(h).sort(byDateDesc)[0] || null;
+      return { h: h, last: last, days: last ? daysBetween(last.date, t) : null };
+    }).filter(function (o) { return !o.last || o.days > 30; }).sort(function (a, b) {
+      if (!a.last && b.last) return -1;
+      if (a.last && !b.last) return 1;
+      return (b.days || 0) - (a.days || 0);
+    });
+    if (!hs.length) cn.appendChild(dvEmpty("أضف الحلقات من قاعدة الحلقات أو جدول الزيارات."));
+    else if (!need.length) cn.appendChild(dvEmpty("كل الحلقات زُرت خلال آخر ٣٠ يومًا 👏"));
+    else {
+      var nl = el("div", "dv-need");
+      need.slice(0, 18).forEach(function (o) {
+        var b = el("button", "dv-nh" + (o.last ? "" : " never"));
+        b.type = "button";
+        b.appendChild(el("b", "", o.h.name));
+        b.appendChild(el("span", "", o.last ? "آخر زيارة قبل " + num(o.days) + " " + dayWord(o.days) : "لم تُزَر بعد"));
+        if (o.h.area) b.appendChild(el("small", "", o.h.area));
+        b.addEventListener("click", function () { goSchedule("all"); });
+        nl.appendChild(b);
+      });
+      cn.appendChild(nl);
+      if (need.length > 18) cn.appendChild(el("p", "dv-note", "و" + num(need.length - 18) + " حلقة أخرى في جدول الزيارات."));
+    }
+    box.appendChild(cn);
   }
 
   function openDashPrint() {
@@ -5109,19 +5460,20 @@
     resetFit();
     var r = $("report");
     r.textContent = "";
+    r.className = "dv-print";
     var clone = $("dash").cloneNode(true);
-    Array.prototype.forEach.call(clone.querySelectorAll(".dk-tmore"), function (n) { n.parentNode.removeChild(n); });
+    clone.removeAttribute("id");
+    Array.prototype.forEach.call(clone.querySelectorAll(".dv-sort, .dv-more, .dv-link"), function (n) { n.parentNode.removeChild(n); });
     r.appendChild(clone);
     $("modal").hidden = false;
     document.body.style.overflow = "hidden";
     $("mClose").focus();
   }
 
-  $("dStyle").addEventListener("change", function () {
-    dstyle = this.value;
-    try { localStorage.setItem("halaqat_dstyle_v2", dstyle); } catch (e) {}
-    renderDash();
-  });
+  $("dPeriod").addEventListener("change", function () { dashF.period = this.value; dashF.all = false; saveDashF(); renderDash(); });
+  $("dVisitor").addEventListener("change", function () { dashF.visitor = this.value; dashF.all = false; renderDash(); });
+  $("dArea").addEventListener("change", function () { dashF.area = this.value; dashF.all = false; renderDash(); });
+  $("dReset").addEventListener("click", function () { dashF.visitor = "all"; dashF.area = "all"; dashF.all = false; renderDash(); });
   $("dashPrint").innerHTML = ICON_CAL + "<span>طباعة اللوحة</span>";
   $("dashPrint").addEventListener("click", openDashPrint);
   $("tabDash").addEventListener("click", function () { switchTab("dash"); });
@@ -5253,7 +5605,6 @@
   }
   function renderSettingsUI() {
     renderVisitorsUI(); renderDaysUI(); renderGradesUI(); renderBackupInfo();
-    $("setDstyle").value = dstyle;
     $("setTheme").value = settings.theme; $("setLayout").value = settings.layout;
     $("bkpConfirm").hidden = true; $("bkpText").hidden = true; pendingImport = null;
     ["visMsg", "wdMsg", "grMsg", "bkpMsg"].forEach(function (id) { setSay(id, ""); });
@@ -5335,11 +5686,6 @@
 
     $("setTheme").addEventListener("change", function () { settings.theme = this.value; applyTheme(); persistSettings(); setSay("thMsg", "تم تغيير الألوان.", "ok"); });
     $("setLayout").addEventListener("change", function () { settings.layout = this.value; applyTheme(); persistSettings(); setSay("thMsg", "تم تغيير تخطيط التنقل.", "ok"); });
-    $("setDstyle").addEventListener("change", function () {
-      dstyle = this.value;
-      try { localStorage.setItem("halaqat_dstyle_v2", dstyle); } catch (e) {}
-      renderDash();
-    });
 
     $("bkpExport").addEventListener("click", function () {
       var json = backupJson();
@@ -5591,6 +5937,7 @@
   $("lgOrg").textContent = org.name || DEFAULT_ORG;
   renderBrand();
   renderAll();
+  switchTab("dash");
 })();
 </script>
 </body>
