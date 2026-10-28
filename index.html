@@ -636,9 +636,9 @@
   .rp .rp-sign .sl img.sig-sup { left: 12%; right: 12%; width: 76%; height: 96px; bottom: -10px; }
   @media print { .rp .rp-sign .sl { height: 88px; } .rp .rp-sign .sl img { height: 110px; } .rp .rp-sign .sl img.sig-sup { height: 90px; } }
   /* larger visit photos: up to three per row */
-  .rp .rp-pgrid.rp-pgrid-big { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 0 auto; }
-  .rp .rp-pgrid-big .rp-fig { flex: 0 0 calc((100% - 20px) / 3); max-width: calc((100% - 20px) / 3); width: auto; padding: 4px; border-radius: 6px; }
-  .rp .rp-pgrid-big.one .rp-fig { flex-basis: 60%; max-width: 60%; }
+  /* all photos on one row; --k = slots in the row (set from the photo count) */
+  .rp .rp-pgrid.rp-pgrid-big { --k: 3; --g: 10px; display: flex; flex-wrap: nowrap; justify-content: center; gap: var(--g); margin: 0 auto; }
+  .rp .rp-pgrid-big .rp-fig { flex: 0 0 calc((100% - (var(--k) - 1) * var(--g)) / var(--k)); max-width: calc((100% - (var(--k) - 1) * var(--g)) / var(--k)); width: auto; padding: 4px; border-radius: 6px; }
   .rp .rp-pgrid-big .rp-fig img { aspect-ratio: 4 / 3; border-radius: 4px; border: 0; }
   .rp .rp-pgrid-big .rp-fig figcaption { font-size: 10.5px; min-height: 24px; padding: 6px 2px 2px; gap: 6px; }
   .rp .rp-pgrid-big .rp-fig figcaption b { width: 17px; height: 17px; font-size: 9.5px; }
@@ -3145,7 +3145,8 @@
       var ph = el("div", "rp-photos");
       ph.appendChild(el("h2", "", "صور الزيارة"));
       var n = v.photos.length;
-      var grid = el("div", "rp-pgrid rp-pgrid-big" + (n === 1 ? " one" : ""));
+      var grid = el("div", "rp-pgrid rp-pgrid-big");
+      grid.style.setProperty("--k", String(n === 1 ? 2 : Math.max(n, 3)));
       v.photos.forEach(function (p, i) {
         var fig = el("figure", "rp-fig");
         var im = document.createElement("img");
@@ -3202,36 +3203,29 @@
       "S .rp-notes{padding:6px 10px;margin-top:8px;min-height:0}", "S .rp-notes h2,S .rp-photos h2{font-size:14px;margin-bottom:4px}",
       "S .rp-notes p{font-size:11.5px;line-height:1.3;column-count:2;column-gap:16px}",
       "S .rp-photos{padding:6px 10px 8px;margin-top:8px}",
-      "S .rp-pgrid-big{gap:8px}", "S .rp-pgrid-big .rp-fig{padding:2px;flex:0 0 calc((100% - 16px) / 3);max-width:calc((100% - 16px) / 3)}",
-      "S .rp-pgrid-big.one .rp-fig{flex-basis:50%;max-width:50%}",
-      /* landscape: table spans both rows; photos sit under the side column (3 per row) by default */
+      "S .rp-pgrid-big{--g:8px}", "S .rp-pgrid-big .rp-fig{padding:2px}",
+      /* landscape: table spans both rows; the photo row sits under the side column by default */
       "SL .rp-body{grid-template-rows:auto 1fr;align-content:start}",
       "SL .rp-colA{grid-column:1;grid-row:1/span 2}", "SL .rp-colB{grid-column:2;grid-row:1}",
       "SL .rp-body>.rp-photos{grid-column:2;grid-row:2;align-self:start;margin-top:10px}",
-      /* variant: six small photos in the side column */
-      /* variant: four per row in the side column */
-      "SL4 .rp-pgrid-big .rp-fig{flex:0 0 calc((100% - 24px) / 4);max-width:calc((100% - 24px) / 4)}",
-      "SL4 .rp-pgrid-big.one .rp-fig{flex-basis:40%;max-width:40%}",
-      /* variant: photos under the table, side column runs the full height */
+      /* variant: photo row under the table, side column runs the full height */
       "SLA .rp-colA{grid-row:1}", "SLA .rp-colB{grid-row:1/span 2}", "SLA .rp-body>.rp-photos{grid-column:1;grid-row:2}",
-      "SLA .rp-pgrid-big.one .rp-fig{flex-basis:40%;max-width:40%}",
-      /* variant: full-width strip under both columns, six per row */
+      /* variant: photo row across the full width under both columns */
       "SLS .rp-colA{grid-row:1}", "SLS .rp-body>.rp-photos{grid-column:1/-1;grid-row:2}",
-      "SLS .rp-pgrid-big .rp-fig{flex:0 0 calc((100% - 40px) / 6);max-width:calc((100% - 40px) / 6)}",
-      "SLS .rp-pgrid-big.one .rp-fig{flex-basis:30%;max-width:30%}",
+      "SLS .rp-pgrid-big{--k:6!important}",
       "S .rp-sign{margin-top:8px}", "S .rp-sign>div{padding:6px 8px}", "S .rp-sign .lb{font-size:12.5px;min-height:2.2em}",
       "S .rp-sign .sl{height:64px}", "S .rp-sign .sl img{height:80px;bottom:-10px}", "S .rp-sign .sl img.sig-sup{height:66px}", "S .rp-sign .nm{font-size:13.5px}",
       "S .rp-foot{margin-top:6px;font-size:11px}", "S .rp-skip{font-size:11px}"
     ].join("\n");
     function scope(base) {
-      return R.replace(/SLS /g, base + ".rp-land.ph-strip ").replace(/SL4 /g, base + ".rp-land.ph-side4 ").replace(/SLA /g, base + ".rp-land.ph-under ")
+      return R.replace(/SLS /g, base + ".rp-land.ph-strip ").replace(/SLA /g, base + ".rp-land.ph-under ")
         .replace(/SL /g, base + ".rp-land ").replace(/S /g, base + " ");
     }
     var css = "\n/* one-page compact (generated) */\n" + scope(".rp.rp-one.rp-measure") +
       "\n@media print{\n" + scope(".rp.rp-one") + "\n}\n";
     $("reportCss").textContent += css;
   })();
-  var FIT_CLASSES = ["rp-port", "rp-land", "ph-strip", "ph-side4", "ph-under"];
+  var FIT_CLASSES = ["rp-port", "rp-land", "ph-strip", "ph-under"];
   function resetFit() {
     var r = $("report");
     $("mSeg").hidden = true;
@@ -3275,14 +3269,12 @@
     }
     /* printable area of A4 after the page margins below */
     var fp = solve("rp-port", 186, 273, "");
-    /* landscape: try photo placements. Strip, side (3 per row) and under-table give the same large photos;
-       take whichever leaves the biggest text, and use four-per-row only when it saves clearly more */
+    /* landscape: try where the single photo row goes (side column, under the table, or full width)
+       and keep whichever leaves the biggest text */
     function bestOf(list) { return list.reduce(function (a, b) { return b.f > a.f ? b : a; }); }
     var best;
     if (hasPhotos) {
       best = bestOf(["ph-strip", "", "ph-under"].map(function (v) { return { v: v, f: solve("rp-land", 277, 190, v) }; }));
-      var four = { v: "ph-side4", f: solve("rp-land", 277, 190, "ph-side4") };
-      if (four.f > best.f + 0.08) best = four;
     } else {
       best = { v: "", f: solve("rp-land", 277, 190, "") };
     }
@@ -3724,6 +3716,38 @@
     $("photoCount").textContent = pending.length + " / " + MAX_PHOTOS;
   }
 
+  /* make a visit photo clearer: stretch dull or dark exposures (auto levels, capped)
+     and add a light unsharp mask so details hold up when printed small */
+  function enhancePhoto(ctx, w, h) {
+    var d = ctx.getImageData(0, 0, w, h), px = d.data, n = w * h, i;
+    var hist = new Uint32Array(256);
+    for (i = 0; i < px.length; i += 4) hist[(px[i] * 77 + px[i + 1] * 150 + px[i + 2] * 29) >> 8]++;
+    var lo = 0, hi = 255, acc = 0, cut = n * 0.005;
+    while (lo < 254 && (acc += hist[lo]) < cut) lo++;
+    acc = 0;
+    while (hi > lo + 1 && (acc += hist[hi]) < cut) hi--;
+    /* nearly flat images (screenshots, plain backgrounds) are left as they are */
+    var gain = (hi - lo) < 20 ? 1 : Math.min(1.4, 255 / Math.max(1, hi - lo));
+    /* stretch around the old middle, nudged a little toward mid-grey (lifts dim photos, tames washed-out ones) */
+    var mid = (lo + hi) / 2, half = (hi - lo) * gain / 2;
+    var target = Math.max(half, Math.min(255 - half, mid + (128 - mid) * 0.35));
+    var lut = new Uint8ClampedArray(256);
+    for (i = 0; i < 256; i++) lut[i] = gain > 1.02 ? (i - mid) * gain + target : i;
+    var src = new Uint8ClampedArray(px.length);
+    for (i = 0; i < px.length; i += 4) { src[i] = lut[px[i]]; src[i + 1] = lut[px[i + 1]]; src[i + 2] = lut[px[i + 2]]; src[i + 3] = 255; }
+    var a = 0.35, row = w * 4;
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var p = y * row + x * 4;
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1) { px[p] = src[p]; px[p + 1] = src[p + 1]; px[p + 2] = src[p + 2]; continue; }
+        for (var ch = 0; ch < 3; ch++) {
+          var q = p + ch;
+          px[q] = src[q] * (1 + 4 * a) - a * (src[q - 4] + src[q + 4] + src[q - row] + src[q + row]);
+        }
+      }
+    }
+    ctx.putImageData(d, 0, 0);
+  }
   function readPhoto(file) {
     return new Promise(function (resolve, reject) {
       var fr = new FileReader();
@@ -3733,17 +3757,20 @@
         img.onerror = reject;
         img.onload = function () {
           try {
-            var max = 640;
+            var max = 1280;
             var w = img.naturalWidth || max, h = img.naturalHeight || max;
             var s = Math.min(1, max / Math.max(w, h));
             var c = document.createElement("canvas");
             c.width = Math.max(1, Math.round(w * s));
             c.height = Math.max(1, Math.round(h * s));
             var ctx = c.getContext("2d");
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
             ctx.fillStyle = "#fff";
             ctx.fillRect(0, 0, c.width, c.height);
             ctx.drawImage(img, 0, 0, c.width, c.height);
-            resolve(c.toDataURL("image/jpeg", 0.7));
+            try { enhancePhoto(ctx, c.width, c.height); } catch (e) {}
+            resolve(c.toDataURL("image/jpeg", 0.86));
           } catch (e) { reject(e); }
         };
         img.src = fr.result;

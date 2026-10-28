@@ -1,0 +1,3 @@
+# Supabase project for نظام وَصل (wasl-visits)
+# Database changes live in supabase/migrations and are applied in file-name order.
+project_id = "rbcblduzattrpbpflrbi"
