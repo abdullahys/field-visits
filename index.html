@@ -770,7 +770,11 @@
   .rp-colA, .rp-colB { display: contents; }
   .rp-body .rp-hero { order: 0; }
   .rp-body .rp-info { order: 1; }
-  .rp-body .rp-detail { order: 2; }
+  .rp-body .rp-detail, .rp-body .rp-tables { order: 2; }
+  .rp .rp-tables.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+  .rp .rp-tables table { width: 100%; }
+  .rp .rp-tables.two .barcell { width: 92px; }
+  .rp .rp-tables.two .rp-lvl i { width: 13px; }
   .rp-body .rp-skip { order: 3; }
   .rp-body .rp-notes { order: 4; }
   .rp-body .rp-photos { order: 5; }
@@ -781,7 +785,7 @@
   .rp.rp-measure.rp-land .rp-colB > * { margin-top: 0; }
   .rp.rp-measure.rp-land .rp-colB > * + * { margin-top: 10px; }
   .rp.rp-measure.rp-land .rp-hero { margin: 8px 0 10px; }
-  @page vportrait { size: A4 portrait; margin: 12mm; }
+  @page vportrait { size: A4 portrait; margin: 8mm; }
   @page vland { size: A4 landscape; margin: 10mm; }
   @media print {
     .rp.rp-one.rp-port { page: vportrait; zoom: var(--fit, 1); }
@@ -3083,6 +3087,24 @@
     });
     colB.appendChild(info);
 
+    /* criteria in the report; the detailed report splits them into two side-by-side tables
+       (balanced by row count) so the whole page fits portrait at a readable size */
+    var used = [];
+    CRITERIA.forEach(function (c, i) { if (critPct(v, i) !== null) used.push(i); });
+    var qsOf = function (i) { return brief ? [] : (v.qa || []).filter(function (q) { return q.c === i; }); };
+    var groups = [used];
+    if (!brief && used.length > 1) {
+      var weight = function (i) { return 1.6 + qsOf(i).length; };
+      var all = used.reduce(function (s, i) { return s + weight(i); }, 0), acc = 0, cut = 1, bestGap = Infinity;
+      used.forEach(function (i, k) {
+        acc += weight(i);
+        var gap = Math.abs(all / 2 - acc);
+        if (k < used.length - 1 && gap < bestGap) { bestGap = gap; cut = k + 1; }
+      });
+      groups = [used.slice(0, cut), used.slice(cut)];
+    }
+    var tables = el("div", "rp-tables" + (groups.length > 1 ? " two" : ""));
+    groups.forEach(function (list, gIdx) {
     var table = el("table", "rp-detail");
     var thead = el("thead");
     var htr = el("tr");
@@ -3090,15 +3112,14 @@
     thead.appendChild(htr);
     table.appendChild(thead);
     var tbody = el("tbody");
-    var skipped = [];
-    CRITERIA.forEach(function (c, i) {
+    list.forEach(function (i) {
+      var c = CRITERIA[i];
       var p = critPct(v, i);
-      if (p === null) { skipped.push(c.name); return; }
       var gi = gradeIdx(p);
       var tr = el("tr", "rp-c");
       var td1 = el("td");
       td1.appendChild(el("span", "nm", c.name));
-      var qs = brief ? [] : (v.qa || []).filter(function (q) { return q.c === i; });
+      var qs = qsOf(i);
       if (!qs.length && !brief) td1.appendChild(el("span", "ht", c.hint));
       tr.appendChild(td1);
       var td2 = el("td", "sc");
@@ -3121,6 +3142,7 @@
       });
     });
     table.appendChild(tbody);
+    if (gIdx === groups.length - 1) {
     var tfoot = el("tfoot");
     var ftr = el("tr");
     ftr.appendChild(el("td", "", "التقدير العام"));
@@ -3134,7 +3156,10 @@
     ftr.appendChild(ftd3);
     tfoot.appendChild(ftr);
     table.appendChild(tfoot);
-    colA.appendChild(table);
+    }
+    tables.appendChild(table);
+    });
+    colA.appendChild(tables);
 
     var notes = el("div", "rp-notes");
     notes.appendChild(el("h2", "", "الملاحظات والتوصيات"));
@@ -3267,21 +3292,10 @@
       while (z > 0.3 && measure(mode, W / z, variant) * z > H) z -= 0.01;
       return z;
     }
-    /* printable area of A4 after the page margins below */
-    var fp = solve("rp-port", 186, 273, "");
-    /* landscape: try where the single photo row goes (side column, under the table, or full width)
-       and keep whichever leaves the biggest text */
-    function bestOf(list) { return list.reduce(function (a, b) { return b.f > a.f ? b : a; }); }
-    var best;
-    if (hasPhotos) {
-      best = bestOf(["ph-strip", "", "ph-under"].map(function (v) { return { v: v, f: solve("rp-land", 277, 190, v) }; }));
-    } else {
-      best = { v: "", f: solve("rp-land", 277, 190, "") };
-    }
-    var land = best.f > fp + 0.02;
-    var fit = Math.floor(Math.min(1, (land ? best.f : fp) * 0.97) * 1000) / 1000;
-    r.classList.add(land ? "rp-land" : "rp-port");
-    if (land && best.v) r.classList.add(best.v);
+    /* always portrait A4: printable area after the 8 mm page margins (@page vportrait) */
+    var fp = solve("rp-port", 194, 281, "");
+    var fit = Math.floor(Math.min(1, fp * 0.97) * 1000) / 1000;
+    r.classList.add("rp-port");
     r.style.setProperty("--fit", String(fit));
   }
 
