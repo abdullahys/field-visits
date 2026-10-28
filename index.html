@@ -1034,6 +1034,28 @@
     .dv-print .dv-kpi { transform: none; }
     .dv-print, .dv-print * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
+  /* ===== visit reports page (تقارير الزيارات) ===== */
+  .rl-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; margin-bottom: 12px; border: 1px solid #e1e7df; border-radius: 14px; background: #f7faf7; }
+  .rl-bar input[type="search"] { flex: 1 1 260px; min-width: 0; }
+  .rl-bar select { width: auto; flex: 0 1 auto; min-width: 130px; padding: 8px 10px; font-size: .88rem; }
+  .rl-d { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: .82rem; font-weight: 600; color: #4a5a53; }
+  .rl-d input { width: auto; padding: 7px 8px; font-size: .86rem; }
+  .rl-sum { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .rl-sum:empty { display: none; }
+  .rl-chip { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; border-radius: 99px; background: #e8f1ec; color: #0e5c37; font-size: .82rem; font-weight: 600; }
+  .rl-chip b { font-size: 1rem; font-weight: 700; }
+  .rl-chip.warn { background: #fbeceb; color: #a1302a; }
+  .rl-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); align-items: start; }
+  .rl-list .empty { grid-column: 1 / -1; }
+  .visit .note.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+  .note-more { font: inherit; font-size: .8rem; font-weight: 600; color: #0f6b3e; background: none; border: 0; padding: 0; margin: -4px 0 8px; cursor: pointer; }
+  .msg .msg-act { margin-inline-start: 10px; padding: 3px 12px; vertical-align: middle; }
+  @media (max-width: 960px) { html.lay-side .tabs .tab:first-child { grid-column: 1 / -1; } }
+  @media (max-width: 640px) {
+    .rl-bar select, .rl-bar input[type="search"] { flex: 1 1 calc(50% - 8px); }
+    .rl-bar input[type="search"] { flex-basis: 100%; }
+    .rl-d { flex: 1 1 calc(50% - 8px); } .rl-d input { flex: 1; min-width: 0; }
+  }
 </style>
 <style id="posterCss">
   /* ===== Invitation-poster identity: ivory + deep green + gold ===== */
@@ -1708,6 +1730,7 @@
     <button class="tab" id="tabBase" role="tab" type="button" aria-selected="false"><span class="ti" id="tiBase"></span><span>قاعدة الحلقات</span></button>
     <button class="tab" id="tabVisits" role="tab" type="button" aria-selected="false"><span class="ti" id="tiVisits"></span><span>نموذج الزيارة</span></button>
     <button class="tab" id="tabSchedule" role="tab" type="button" aria-selected="false"><span class="ti" id="tiSchedule"></span><span>جدول الزيارات</span><span class="tabbadge" id="tabBadge" hidden></span></button>
+    <button class="tab" id="tabReports" role="tab" type="button" aria-selected="false"><span class="ti" id="tiReports"></span><span>تقارير الزيارات</span></button>
   </nav>
 
   <div id="viewVisits" hidden>
@@ -1719,37 +1742,12 @@
     </div>
     <svg class="hero-art" viewBox="0 0 480 300" aria-hidden="true"><use href="#rf-route"/></svg>
   </section>
-  <section class="stats" aria-label="ملخص">
-    <div class="dk-tile tc-slate">
-      <div class="dk-tico"><span data-ic="clip"></span></div>
-      <div class="dk-tlbl">عدد الزيارات</div>
-      <div class="dk-tnum" id="sCount">0</div>
-      <div class="dk-tsub" id="sCountSub"></div>
-      <button class="dk-tmore" id="stMore1" type="button">عرض التفاصيل</button>
-    </div>
-    <div class="dk-tile tc-gold">
-      <div class="dk-tico"><span data-ic="star"></span></div>
-      <div class="dk-tlbl">متوسط التقدير</div>
-      <div class="dk-tnum" id="sAvg">–</div>
-      <div class="dk-tsub" id="sAvgSub"></div>
-      <div class="st-meter"><i id="sAvgBar"></i></div>
-      <button class="dk-tmore" id="stMore2" type="button">عرض التفاصيل</button>
-    </div>
-    <div class="dk-tile tc-red">
-      <div class="dk-tico"><span data-ic="alert"></span></div>
-      <div class="dk-tlbl">تحتاج متابعة</div>
-      <div class="dk-tnum" id="sWarn">0</div>
-      <div class="dk-tsub" id="sWarnSub"></div>
-      <button class="dk-tmore" id="stMore3" type="button">عرض التفاصيل</button>
-    </div>
-  </section>
-
   <section class="panel formwide" aria-labelledby="formTitle">
     <div class="panel-head">
       <h2 id="formTitle">تسجيل زيارة جديدة</h2>
       <div class="head-acts">
         <button class="btn ghost ib tbl" id="openBank" type="button" aria-haspopup="dialog" title="بنك الأسئلة: اختر السؤال ونوع الزيارة"><span class="ico" data-ic="qbank"></span><span>بنك الأسئلة</span></button>
-        <button class="btn ghost ib tbl" id="openList" type="button" aria-haspopup="dialog" title="عرض الزيارات المسجلة"><span class="ico" data-ic="list"></span><span>الزيارات المسجلة</span><b class="cnt" id="listCount">0</b></button>
+        <button class="btn ghost ib tbl" id="openList" type="button" title="عرض تقارير الزيارات"><span class="ico" data-ic="list"></span><span>تقارير الزيارات</span><b class="cnt" id="listCount">0</b></button>
       </div>
     </div>
     <div id="form">
@@ -1834,6 +1832,39 @@
     </section>
   </div>
 
+  <div id="viewReports" hidden>
+    <section class="panel" aria-labelledby="listTitle">
+      <div class="panel-head">
+        <h2 id="listTitle">تقارير الزيارات</h2>
+        <div class="head-acts">
+          <button class="btn ghost ib tbl" id="tableBtn" type="button" title="عرض كشف الزيارات حسب التصفية وطباعته"></button>
+          <button class="btn sm" id="rpNew" type="button">تسجيل زيارة جديدة</button>
+        </div>
+      </div>
+      <div class="rl-bar">
+        <input id="q" type="search" placeholder="ابحث باسم الحلقة أو المعلم أو المسجد" aria-label="بحث">
+        <select id="filter" aria-label="تصفية حسب التقدير">
+          <option value="all">كل التقديرات</option>
+          <option value="1">ممتاز</option>
+          <option value="2">جيد جدًا</option>
+          <option value="3">جيد</option>
+          <option value="4">مقبول</option>
+          <option value="5">ضعيف</option>
+          <option value="warn">تحتاج متابعة (مقبول وضعيف)</option>
+        </select>
+        <select id="rVisitor" aria-label="الزائر"></select>
+        <select id="rArea" aria-label="المكان"></select>
+        <select id="rType" aria-label="نوع الزيارة"></select>
+        <label class="rl-d"><span>من</span><input id="rFrom" type="date" aria-label="من تاريخ"></label>
+        <label class="rl-d"><span>إلى</span><input id="rTo" type="date" aria-label="إلى تاريخ"></label>
+        <select id="rSort" aria-label="الترتيب"><option value="new">الأحدث أولًا</option><option value="old">الأقدم أولًا</option><option value="low">الأقل درجة</option><option value="high">الأعلى درجة</option></select>
+        <button class="btn ghost sm" id="rReset" type="button" hidden>إلغاء التصفية</button>
+      </div>
+      <div class="rl-sum" id="rlSum" aria-live="polite"></div>
+      <p class="msg" id="dlMsg" role="status" aria-live="polite"></p>
+      <ul class="visits rl-list" id="list"></ul>
+    </section>
+  </div>
   <div id="viewBase" hidden>
     <section class="panel" aria-labelledby="baseTitle">
       <div class="panel-head">
@@ -1936,32 +1967,6 @@
         </table>
       </div>
     </section>
-  </div>
-</div>
-
-<div id="listDrawer" class="drawer" hidden role="dialog" aria-modal="true" aria-label="الزيارات المسجلة">
-  <div class="drawer-sheet">
-    <div class="panel-head">
-      <h2 id="listTitle">الزيارات المسجلة</h2>
-      <div class="head-acts">
-        <button class="btn ghost ib tbl" id="tableBtn" type="button" title="عرض كشف الزيارات المسجلة وطباعته"></button>
-        <button class="btn ghost" id="closeList" type="button">إغلاق</button>
-      </div>
-    </div>
-    <div class="toolbar">
-      <input id="q" type="search" placeholder="ابحث باسم الحلقة أو المعلم أو المسجد" aria-label="بحث">
-      <select id="filter" aria-label="تصفية حسب التقدير">
-        <option value="all">كل التقديرات</option>
-        <option value="1">ممتاز</option>
-        <option value="2">جيد جدًا</option>
-        <option value="3">جيد</option>
-        <option value="4">مقبول</option>
-        <option value="5">ضعيف</option>
-        <option value="warn">تحتاج متابعة (مقبول وضعيف)</option>
-      </select>
-    </div>
-    <p class="msg" id="dlMsg" role="status" aria-live="polite"></p>
-    <ul class="visits" id="list"></ul>
   </div>
 </div>
 
@@ -2979,40 +2984,80 @@
   /* ---------- stats / list ---------- */
   function renderStats() {
     var n = visits.length;
-    $("sCount").textContent = numL(n);
     $("listCount").textContent = num(n);
-    var avgV = null, warn = 0, lastD = "";
-    if (n) {
-      avgV = visits.reduce(function (x, v) { return x + total(v); }, 0) / n;
-      warn = visits.filter(function (v) { return status(total(v)).k === "warn"; }).length;
-      lastD = visits.reduce(function (m, v) { return v.date > m ? v.date : m; }, "");
+  }
+
+  /* ---------- visit reports page filters ---------- */
+  function rpVal(id) { return $(id).value; }
+  function rpFiltered() {
+    return !!$("q").value.trim() || rpVal("filter") !== "all" || rpVal("rVisitor") !== "all" || rpVal("rArea") !== "all" || rpVal("rType") !== "all" || !!rpVal("rFrom") || !!rpVal("rTo");
+  }
+  function rpMatch(v) {
+    var q = $("q").value.trim().toLowerCase();
+    var hay = (v.halqa + " " + (v.teacher || "") + " " + vPlace(v) + " " + (v.visitor || "")).toLowerCase();
+    if (q && hay.indexOf(q) === -1) return false;
+    if (!matchGrade(v, rpVal("filter"))) return false;
+    if (rpVal("rVisitor") !== "all" && (v.visitor || "") !== rpVal("rVisitor")) return false;
+    if (rpVal("rArea") !== "all" && (vArea(v) || "") !== rpVal("rArea")) return false;
+    if (rpVal("rType") !== "all" && (v.type || "") !== rpVal("rType")) return false;
+    if (rpVal("rFrom") && v.date < rpVal("rFrom")) return false;
+    if (rpVal("rTo") && v.date > rpVal("rTo")) return false;
+    return true;
+  }
+  function rpOptions(id, all, vals) {
+    var sel = $(id), cur = sel.value || "all";
+    sel.textContent = "";
+    var o = el("option", "", all); o.value = "all"; sel.appendChild(o);
+    vals.filter(function (x, i, a) { return x && a.indexOf(x) === i; }).sort(function (a, b) { return a.localeCompare(b, "ar"); }).forEach(function (x) {
+      var op = el("option", "", x); op.value = x; sel.appendChild(op);
+    });
+    sel.value = cur;
+    if (sel.value !== cur) sel.value = "all";
+  }
+  function fillReportFilters() {
+    rpOptions("rVisitor", "كل الزائرين", visits.map(function (v) { return v.visitor; }));
+    rpOptions("rArea", "كل الأماكن", visits.map(vArea));
+    rpOptions("rType", "كل أنواع الزيارة", visits.map(function (v) { return v.type; }));
+  }
+  function resetReportFilters() {
+    $("q").value = ""; $("filter").value = "all";
+    ["rVisitor", "rArea", "rType"].forEach(function (id) { $(id).value = "all"; });
+    $("rFrom").value = ""; $("rTo").value = "";
+  }
+  function rpSort(a, b) {
+    var k = rpVal("rSort");
+    if (k === "low" || k === "high") { var d = total(a) - total(b); if (d) return k === "low" ? d : -d; }
+    var o = a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id;
+    return k === "old" ? -o : o;
+  }
+  function renderRlSum(shown) {
+    var box = $("rlSum");
+    box.textContent = "";
+    $("rReset").hidden = !rpFiltered();
+    if (!visits.length) return;
+    var avg = shown.length ? shown.reduce(function (x, v) { return x + total(v); }, 0) / shown.length : null;
+    var warn = shown.filter(function (v) { return status(total(v)).k === "warn"; }).length;
+    var hs = shown.map(function (v) { return v.halqa; }).filter(function (x, i, a) { return a.indexOf(x) === i; }).length;
+    function chip(label, val, cls) {
+      var c = el("span", "rl-chip" + (cls ? " " + cls : ""));
+      c.appendChild(el("b", "", val));
+      c.appendChild(el("span", "", label));
+      box.appendChild(c);
     }
-    $("sAvg").textContent = avgV === null ? "–" : gradeName(avgV);
-    $("sAvg").style.fontSize = avgV === null ? "" : "28px";
-    $("sWarn").textContent = numL(warn);
-    $("sCountSub").textContent = lastD ? "آخر زيارة: " + fmtShort(lastD) : "لم تسجل زيارات بعد";
-    $("sAvgSub").textContent = avgV === null ? "لا توجد بيانات" : "حسب " + numL(n) + " زيارة";
-    var bar = $("sAvgBar");
-    bar.style.width = (avgV === null ? 0 : Math.min(100, avgV)) + "%";
-    bar.style.background = avgV === null ? "#c9cfcb" : RT[toneIdx(avgV / 100)].c;
-    $("sWarnSub").textContent = n ? "من أصل " + numL(n) + " زيارة" : "لا توجد بيانات";
+    chip(rpFiltered() ? "زيارة من " + num(visits.length) : "زيارة", num(shown.length));
+    chip("حلقة", num(hs));
+    if (avg !== null) chip("متوسط الدرجة • " + gradeName(avg), num(Math.round(avg * 10) / 10));
+    if (warn) chip("تحتاج متابعة", num(warn), "warn");
   }
 
   function renderList() {
-    var q = $("q").value.trim().toLowerCase();
-    var f = $("filter").value;
     var list = $("list");
     list.textContent = "";
-
-    var shown = visits.filter(function (v) {
-      var hay = (v.halqa + " " + v.teacher + " " + vPlace(v)).toLowerCase();
-      return (!q || hay.indexOf(q) !== -1) && matchGrade(v, f);
-    }).sort(function (a, b) {
-      return a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id;
-    });
+    var shown = visits.filter(rpMatch).sort(rpSort);
+    renderRlSum(shown);
 
     if (!shown.length) {
-      list.appendChild(el("li", "empty", visits.length ? "ما فيه نتائج تطابق البحث." : "ما سجلت أي زيارة للحين. عبّ النموذج واضغط «حفظ الزيارة»."));
+      list.appendChild(el("li", "empty", visits.length ? "ما فيه زيارات تطابق التصفية." : "ما سجلت أي زيارة للحين. سجّل زيارة من «نموذج الزيارة» وتظهر تقاريرها هنا."));
       return;
     }
 
@@ -3065,7 +3110,16 @@
       }
       li.appendChild(sc);
 
-      if (v.notes) li.appendChild(el("p", "note", v.notes));
+      if (v.notes) {
+        var nt = el("p", "note clamp", v.notes);
+        li.appendChild(nt);
+        if (v.notes.split(String.fromCharCode(10)).length > 3 || v.notes.length > 220) {
+          var mb = el("button", "note-more", "عرض الكل");
+          mb.type = "button";
+          mb.addEventListener("click", function () { var open = nt.classList.toggle("clamp"); mb.textContent = open ? "عرض الكل" : "إخفاء"; });
+          li.appendChild(mb);
+        } else nt.classList.remove("clamp");
+      }
 
       if (v.photos && v.photos.length) {
         var ct = el("div", "cthumbs");
@@ -3434,12 +3488,7 @@
   }
 
   function getShown() {
-    var q = $("q").value.trim().toLowerCase();
-    var f = $("filter").value;
-    return visits.filter(function (v) {
-      var hay = (v.halqa + " " + v.teacher + " " + vPlace(v)).toLowerCase();
-      return (!q || hay.indexOf(q) !== -1) && matchGrade(v, f);
-    }).sort(function (a, b) { return (a.no || 0) - (b.no || 0); });
+    return visits.filter(rpMatch).sort(function (a, b) { return (a.no || 0) - (b.no || 0); });
   }
 
   function fmtShort(sd) {
@@ -3449,7 +3498,7 @@
 
   function buildTable() {
     var list = getShown();
-    var filtered = !!$("q").value.trim() || $("filter").value !== "all";
+    var filtered = rpFiltered();
     var r = $("report");
     r.textContent = "";
     r.style.setProperty("--c", "#0e5c37");
@@ -3724,7 +3773,7 @@
   }
   function closeReport() {
     $("modal").hidden = true;
-    document.body.style.overflow = ($("listDrawer").hidden && $("bankDrawer").hidden && $("setDrawer").hidden) ? "" : "hidden";
+    document.body.style.overflow = ($("bankDrawer").hidden && $("setDrawer").hidden) ? "" : "hidden";
     current = null;
   }
 
@@ -3764,21 +3813,12 @@
   $("tableBtn").innerHTML = ICON_TABLE + "<span>كشف الزيارات</span>";
   $("tableBtn").addEventListener("click", openTable);
 
-  function openList() {
-    $("listDrawer").hidden = false;
-    document.body.style.overflow = "hidden";
-    $("closeList").focus();
-  }
-  function closeList() {
-    $("listDrawer").hidden = true;
-    document.body.style.overflow = "";
-  }
+  function openList() { switchTab("reports"); }
+  function closeList() {}
   $("openList").addEventListener("click", openList);
-  $("stMore1").addEventListener("click", function () { openListWith("all"); });
-  $("stMore2").addEventListener("click", function () { switchTab("dash"); });
-  $("stMore3").addEventListener("click", function () { openListWith("warn"); });
-  $("closeList").addEventListener("click", closeList);
-  $("listDrawer").addEventListener("click", function (e) { if (e.target === this) closeList(); });
+  $("rpNew").addEventListener("click", function () { switchTab("visits"); try { $("formTitle").scrollIntoView({ block: "start" }); } catch (e) {} });
+  ["rVisitor", "rArea", "rType", "rFrom", "rTo", "rSort"].forEach(function (id) { $(id).addEventListener("change", renderList); });
+  $("rReset").addEventListener("click", function () { resetReportFilters(); renderList(); });
 
   $("mPrint").addEventListener("click", function () {
     if (!current) return;
@@ -3820,7 +3860,6 @@
     if (!$("modal").hidden) closeReport();
     else if (!$("setDrawer").hidden) closeSettings();
     else if (!$("bankDrawer").hidden) closeBank();
-    else if (!$("listDrawer").hidden) closeList();
   });
 
   try {
@@ -4114,20 +4153,22 @@
     fillList("teacherList", halaqat.map(function (h) { return h.teacher; }));
   }
 
+  var VIEWS = { dash: "Dash", base: "Base", visits: "Visits", schedule: "Schedule", reports: "Reports" };
   function switchTab(name) {
-    var sch = name === "schedule", dsh = name === "dash", bas = name === "base";
-    $("viewVisits").hidden = sch || dsh || bas;
-    $("viewSchedule").hidden = !sch;
-    $("viewDash").hidden = !dsh;
-    $("viewBase").hidden = !bas;
-    document.body.classList.toggle("sched", sch || bas);
-    $("tabVisits").setAttribute("aria-selected", (!sch && !dsh && !bas) ? "true" : "false");
-    $("tabSchedule").setAttribute("aria-selected", sch ? "true" : "false");
-    $("tabDash").setAttribute("aria-selected", dsh ? "true" : "false");
-    $("tabBase").setAttribute("aria-selected", bas ? "true" : "false");
-    if (sch) renderSchedule();
-    if (dsh) renderDash();
-    if (bas) renderBase();
+    if (!VIEWS[name]) name = "dash";
+    var was = null;
+    Object.keys(VIEWS).forEach(function (k) { if (!$("view" + VIEWS[k]).hidden) was = k; });
+    Object.keys(VIEWS).forEach(function (k) {
+      $("view" + VIEWS[k]).hidden = k !== name;
+      $("tab" + VIEWS[k]).setAttribute("aria-selected", k === name ? "true" : "false");
+    });
+    document.body.classList.toggle("sched", name === "schedule" || name === "base");
+    if (name === "schedule") renderSchedule();
+    if (name === "dash") renderDash();
+    if (name === "base") renderBase();
+    if (name === "reports") { fillReportFilters(); renderList(); }
+    try { sessionStorage.setItem("wasl_tab", name); } catch (e) {}
+    if (was !== name) try { window.scrollTo(0, 0); } catch (e) {}
   }
 
   function goRegister(h) {
@@ -5023,12 +5064,13 @@
   function saveDashF() { try { localStorage.setItem("wasl_dash_v1", JSON.stringify({ period: dashF.period })); } catch (e) {} }
 
   function openListWith(f) {
-    $("q").value = "";
+    resetReportFilters();
     $("filter").value = f;
     renderList();
     openList();
   }
   function openVisitsFor(name) {
+    resetReportFilters();
     $("q").value = name;
     $("filter").value = "all";
     renderList();
@@ -5477,6 +5519,19 @@
   $("dashPrint").innerHTML = ICON_CAL + "<span>طباعة اللوحة</span>";
   $("dashPrint").addEventListener("click", openDashPrint);
   $("tabDash").addEventListener("click", function () { switchTab("dash"); });
+  $("tabReports").addEventListener("click", function () { switchTab("reports"); });
+  Array.prototype.forEach.call(document.querySelectorAll("nav.tabs .tab"), function (t, i, all) {
+    var lbl = t.querySelector("span:not(.ti):not(.tabbadge)");
+    if (lbl) t.title = lbl.textContent;
+    t.addEventListener("keydown", function (e) {
+      var k = e.key, d = k === "ArrowDown" || k === "ArrowLeft" ? 1 : k === "ArrowUp" || k === "ArrowRight" ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      var n = all[(i + d + all.length) % all.length];
+      n.focus(); n.click();
+    });
+  });
+  $("tiReports").innerHTML = ICONS.list;
   $("tiDash").innerHTML = ICON_CHART;
   Array.prototype.forEach.call(document.querySelectorAll("[data-ic]"), function (n) { n.innerHTML = ICONS[n.getAttribute("data-ic")] || ""; });
 
@@ -5761,7 +5816,7 @@
     $("footYear").textContent = t.slice(0, 4);
   }
   function renderAll() {
-    renderStats(); renderList(); refreshDatalist(); renderSchedule(); renderDash(); renderToday();
+    renderStats(); fillReportFilters(); renderList(); refreshDatalist(); renderSchedule(); renderDash(); renderToday();
     if (!$("viewBase").hidden) renderBase();
     $("footHal").textContent = num(halaqat.length);
     $("footVis").textContent = num(visits.length);
@@ -5911,6 +5966,14 @@
     resetForm();
     renderAll();
     say(saved ? (old ? "تم حفظ التعديلات على الزيارة." : "تم حفظ الزيارة.") : "انحفظت الزيارة للجلسة الحالية فقط، المتصفح ما سمح بالتخزين (قد تكون الصور كبيرة، جرّب عددًا أقل).", saved ? "ok" : "err");
+    var rb = el("button", "btn ghost sm msg-act", "عرض التقرير");
+    rb.type = "button";
+    rb.addEventListener("click", function () { openReport(v); });
+    var lb = el("button", "btn ghost sm msg-act", "تقارير الزيارات");
+    lb.type = "button";
+    lb.addEventListener("click", function () { resetReportFilters(); switchTab("reports"); });
+    $("msg").appendChild(rb);
+    $("msg").appendChild(lb);
     $("halqa").focus();
   });
 
@@ -5937,7 +6000,9 @@
   $("lgOrg").textContent = org.name || DEFAULT_ORG;
   renderBrand();
   renderAll();
-  switchTab("dash");
+  var startTab = "dash";
+  try { startTab = sessionStorage.getItem("wasl_tab") || "dash"; } catch (e) {}
+  switchTab(startTab);
 })();
 </script>
 </body>
