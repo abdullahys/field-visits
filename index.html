@@ -228,12 +228,19 @@
     location.reload();
     return true;
   }
+  function settled() {
+    if (Cloud.synced) return;
+    Cloud.synced = true;
+    if (typeof Cloud.onSynced === "function") try { Cloud.onSynced(); } catch (e) {}
+  }
   function syncNow() {
     return pull().then(function (changed) {
       if (changed && reloadOnce()) return;
+      settled();
       push();
     }, function (err) {
       status("err", "تعذّر الاتصال بالسحابة • تعمل على نسخة الجهاز");
+      settled();
       try { console.warn("Wasl sync pull failed", err); } catch (e) {}
     });
   }
@@ -273,6 +280,7 @@
 
   if (!window.supabase || !window.supabase.createClient) {
     status("off", "غير متصل • محفوظ على الجهاز");
+    Cloud.synced = true;
     return;
   }
   sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
@@ -287,6 +295,7 @@
     if (session && ephemeral && !alive) { Cloud.signOut(); return; }
     if (!session) {
       document.documentElement.classList.remove("authed");
+      settled();
       return;
     }
     document.documentElement.classList.add("authed");
@@ -1049,6 +1058,10 @@
   .rl-list .empty { grid-column: 1 / -1; }
   .visit .note.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
   .note-more { font: inherit; font-size: .8rem; font-weight: 600; color: #0f6b3e; background: none; border: 0; padding: 0; margin: -4px 0 8px; cursor: pointer; }
+  .as-note { margin: 0 0 10px; padding: 8px 12px; border-radius: 10px; font-size: .84rem; background: #f3f5f3; color: #5b6b64; }
+  .as-note.on { background: #e8f1ec; color: #0e5c37; font-weight: 600; }
+  .chk.as-on { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0 8px; font-weight: 600; }
+  .chk.as-on input { width: auto; margin-top: 4px; }
   .msg .msg-act { margin-inline-start: 10px; padding: 3px 12px; vertical-align: middle; }
   @media (max-width: 960px) { html.lay-side .tabs .tab:first-child { grid-column: 1 / -1; } }
   @media (max-width: 640px) {
@@ -1940,6 +1953,7 @@
         </div>
         <div class="tool" id="toolAuto" hidden>
           <p class="hint-s" style="margin-top:0">توزّع الحلقات غير المجدولة على أيام العمل (<span id="autoDays"></span>) وتوزّع الزائرين بالتناوب. تغيّر الأيام من الإعدادات.</p>
+          <p class="as-note" id="autoNote"></p>
           <div class="tool-auto">
             <div><label for="autoFrom">تبدأ من</label><input id="autoFrom" type="date"></div>
             <div><label for="autoPer">زيارات في اليوم</label><input id="autoPer" type="number" min="1" max="30" value="3" inputmode="numeric"></div>
@@ -2078,6 +2092,9 @@
         <div class="wd-box" id="wdBox"></div>
         <label for="setPerDay">عدد الزيارات الافتراضي في اليوم</label>
         <input id="setPerDay" type="number" min="1" max="30" inputmode="numeric">
+        <label class="chk as-on"><input id="setAuto" type="checkbox"> <span>جدولة تلقائية: أي حلقة بدون موعد، أو زُرت، يتحدد موعدها القادم تلقائيًا</span></label>
+        <label for="setCycle">تكرار زيارة الحلقة كل (يوم)</label>
+        <input id="setCycle" type="number" min="7" max="180" inputmode="numeric">
         <p class="msg" id="wdMsg" role="status" aria-live="polite"></p>
       </section>
 
@@ -4092,6 +4109,40 @@
     return visits.filter(function (v) { return norm(v.halqa) === n; });
   }
 
+  /* ---------- automatic scheduling ----------
+     A halaqa with no date, or whose scheduled visit is done, gets its next date:
+     last visit + cycle (or today if never visited), moved to the first work day
+     that still has room (settings.perDay). Late visits keep their date. */
+  function autoPlan() {
+    if (!settings.autoSched || !halaqat.length || !settings.workDays.length) return 0;
+    if (window.WaslCloud && window.WaslCloud.available && !window.WaslCloud.synced) return 0;
+    var t = today(), load = {}, todo = [], vi = 0;
+    halaqat.forEach(function (h) {
+      var info = schInfo(h);
+      if (info.k === "none" || info.k === "done") todo.push({ h: h, last: info.last });
+      else load[h.next] = (load[h.next] || 0) + 1;
+    });
+    if (!todo.length) return 0;
+    todo.forEach(function (x) {
+      var b = x.last ? addDays(x.last.date, settings.cycle) : t;
+      x.base = b < t ? t : b;
+    });
+    todo.sort(function (a, b) { return a.base < b.base ? -1 : a.base > b.base ? 1 : 0; });
+    todo.forEach(function (x) {
+      var d = new Date(x.base + "T00:00:00"), day = x.base, guard = 0;
+      while (guard++ < 800) {
+        day = ymd(d);
+        if (settings.workDays.indexOf(d.getDay()) !== -1 && (load[day] || 0) < settings.perDay) break;
+        d.setDate(d.getDate() + 1);
+      }
+      x.h.next = day;
+      load[day] = (load[day] || 0) + 1;
+      if (!x.h.visitor && VISITORS.length) x.h.visitor = VISITORS[vi++ % VISITORS.length];
+    });
+    persistHal();
+    return todo.length;
+  }
+
   function schInfo(h) {
     var t = today();
     var vs = visitsOf(h).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : (b.no || 0) - (a.no || 0); });
@@ -4735,6 +4786,11 @@
     hSay("impMsg", added || skipped ? "تمت إضافة " + added + " حلقة" + (skipped ? "، وتجاهلت " + skipped + " مكررة." : ".") : "ما لقيت حلقات في النص.", added ? "ok" : "err");
   });
 
+  function renderAutoNote() {
+    var n = $("autoNote");
+    n.textContent = settings.autoSched ? "الجدولة التلقائية مفعّلة: الحلقة اللي بدون موعد أو تمت زيارتها يتحدد موعدها القادم تلقائيًا (كل " + num(settings.cycle) + " يوم، " + num(settings.perDay) + " زيارات في اليوم). تغيّرها من الإعدادات." : "الجدولة التلقائية متوقفة. تقدر تفعّلها من الإعدادات.";
+    n.className = "as-note" + (settings.autoSched ? " on" : "");
+  }
   $("autoBtn").addEventListener("click", function () {
     var list = halaqat.filter(function (h) { return !h.next; });
     if (!list.length) { hSay("autoMsg", halaqat.length ? "كل الحلقات مجدولة." : "أضف الحلقات أول.", "err"); return; }
@@ -5539,7 +5595,7 @@
   var SET_KEY = "halaqat_settings_v1";
   var WD_NAMES = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
   var BACKUP_KEYS = [KEY, HAL_KEY, ORG_KEY, COUNTER_KEY, QB_KEY, SET_KEY, "halaqat_dstyle_v2", SEED_KEY, PRESET_KEY, "halaqat_base_v1"];
-  function defaultSettings() { return { visitors: [], workDays: [0, 1, 2, 3, 4], perDay: 3, grades: [90, 80, 70, 60], theme: "green", layout: "side" }; }
+  function defaultSettings() { return { visitors: [], workDays: [0, 1, 2, 3, 4], perDay: 3, autoSched: true, cycle: 30, grades: [90, 80, 70, 60], theme: "green", layout: "side" }; }
   var settings = defaultSettings();
   var pendingImport = null;
 
@@ -5577,6 +5633,8 @@
         if (wd.length) def.workDays = wd;
       }
       if (typeof d.perDay === "number" && d.perDay >= 1 && d.perDay <= 30) def.perDay = Math.round(d.perDay);
+      if (typeof d.autoSched === "boolean") def.autoSched = d.autoSched;
+      if (typeof d.cycle === "number" && d.cycle >= 7 && d.cycle <= 180) def.cycle = Math.round(d.cycle);
       if (Array.isArray(d.grades) && d.grades.length === 4 && gradesValid(d.grades)) def.grades = d.grades.slice();
       if (["modern", "green", "royal"].indexOf(d.theme) !== -1) def.theme = d.theme;
       if (d.layout === "side" || d.layout === "top") def.layout = d.layout;
@@ -5645,6 +5703,9 @@
       box.appendChild(lab);
     });
     $("setPerDay").value = settings.perDay;
+    $("setAuto").checked = settings.autoSched;
+    $("setCycle").value = settings.cycle;
+    $("setCycle").disabled = !settings.autoSched;
     renderDaysText();
   }
   function gradesPreview() {
@@ -5723,6 +5784,20 @@
       settings.perDay = n; this.value = n; $("autoPer").value = n;
       persistSettings();
       setSay("wdMsg", "تم الحفظ.", "ok");
+    });
+
+    $("setAuto").addEventListener("change", function () {
+      settings.autoSched = this.checked;
+      $("setCycle").disabled = !this.checked;
+      persistSettings();
+      renderAll();
+      setSay("wdMsg", this.checked ? "تم تفعيل الجدولة التلقائية." : "تم إيقاف الجدولة التلقائية. حدد المواعيد يدويًا من الجدول.", "ok");
+    });
+    $("setCycle").addEventListener("change", function () {
+      var n = Math.min(180, Math.max(7, parseInt(this.value, 10) || settings.cycle));
+      settings.cycle = n; this.value = n;
+      persistSettings();
+      setSay("wdMsg", "تم الحفظ. الزيارات القادمة تتحدد كل " + num(n) + " يوم.", "ok");
     });
 
     function readGrades() { var g = []; for (var i = 0; i < 4; i++) g.push(parseFloat($("gr" + i).value)); return g; }
@@ -5816,7 +5891,8 @@
     $("footYear").textContent = t.slice(0, 4);
   }
   function renderAll() {
-    renderStats(); fillReportFilters(); renderList(); refreshDatalist(); renderSchedule(); renderDash(); renderToday();
+    autoPlan();
+    renderAutoNote(); renderStats(); fillReportFilters(); renderList(); refreshDatalist(); renderSchedule(); renderDash(); renderToday();
     if (!$("viewBase").hidden) renderBase();
     $("footHal").textContent = num(halaqat.length);
     $("footVis").textContent = num(visits.length);
@@ -6000,6 +6076,7 @@
   $("lgOrg").textContent = org.name || DEFAULT_ORG;
   renderBrand();
   renderAll();
+  if (window.WaslCloud) window.WaslCloud.onSynced = function () { if (autoPlan()) renderAll(); };
   var startTab = "dash";
   try { startTab = sessionStorage.getItem("wasl_tab") || "dash"; } catch (e) {}
   switchTab(startTab);
